@@ -4,14 +4,51 @@ import os
 import google.generativeai as genai
 import base64
 
-# st.set_page_config(page_title="HerVoice - Women in STEM Chatbot", page_icon="💬", layout="centered")
-# st.title("👩‍🔬 HerVoice - Empowering Women in STEM")
+import streamlit as st
+st.set_page_config(
+    page_title="HerVoice – Women in STEM Chatbot",
+    page_icon="💬",
+     layout="wide",
+)
 
+
+# Sidebar: HerVoice Mission Support
+with st.sidebar:
+    st.title("HerVoice")  # Sidebar title
+    st.subheader("Our Mission 💜")  # Focused on your project mission
+
+    st.write("""
+    We are here to uplift and empower women in Science, Technology, Engineering, and Mathematics (STEM).
+
+    👩‍🔬 Our chatbot offers:
+    - A safe, anonymous space for sharing challenges  
+    - Guidance on power dynamics and workplace bias  
+    - Mentorship and career navigation support  
+    - Resources for opportunities  
+
+    HerVoice believes that every voice matters — especially yours.
+    """)
+
+    st.subheader("Focus Areas")
+    st.write("""
+    - 💼 Navigating Workplace Challenges  
+    - 🧑‍🏫 Finding Mentorship  
+    - 🧠 Building Confidence in STEM  
+    - 🔍 Anonymous Guidance
+    """)
+
+    # Reset conversation button
+    if st.button("Reset Conversation 🔄", use_container_width=True):
+        st.session_state.chat_history = []
+        st.rerun()
 
 
 def get_image_base64(path):
     with open(path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
+
+logo_base64 = get_image_base64("img/minilogo.png")  # or logo.png
+
 
 img_base64 = get_image_base64("img/logo.png")
 
@@ -21,7 +58,6 @@ with st.container():
             <img src='data:image/png;base64,{img_base64}' width='300'/>
         </div>
     """, unsafe_allow_html=True)
-
 
 
 img_bg = get_image_base64("img/bg.jpg")
@@ -61,9 +97,6 @@ button[kind="primary"] {{
     padding: 8px;
     margin-top: 10px;
 }}
-
-
-
 </style>
 """
 
@@ -81,27 +114,7 @@ model = genai.GenerativeModel("gemini-pro")
 
 # App settings
 
-# with st.sidebar:
-#     # st.image("img/stem_logo.png", width=200)
-#     st.title("HerVoice Chatbot")
-#     st.subheader("Your STEM Ally 💜")
-#     st.write("""
-#     Welcome to HerVoice, a supportive chatbot for women in Science, Technology, Engineering, and Mathematics (STEM).
-    
-#     🤝 I'm here to:
-#     - Listen and guide through challenging experiences
-#     - Share STEM career advice and resources
-#     - Promote mentorship and equality
-#     - Ensure a safe and anonymous space
-    
-#     Ask me anything—from handling power dynamics to finding scholarships and mentorships.
-#     """)
-    
-#     if st.button("Reset Conversation 🔄", use_container_width=True):
-#         st.session_state.chat_history = []
-#         st.rerun()
 
-# Initialize chat history
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
