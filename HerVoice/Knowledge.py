@@ -1,9 +1,13 @@
-
 import os
-from urllib import response
+import json
 from dotenv import load_dotenv
+import logging
+from datetime import datetime
+from typing import List
+
+
+import textwrap
 from pprint import pprint
-from llama_index.core.llms.chatml_utils import DEFAULT_SYSTEM_PROMPT
 from sqlalchemy.engine.url import make_url
 from IPython.display import Markdown
 from langchain_core.prompts import PromptTemplate
@@ -12,29 +16,120 @@ from sqlalchemy.engine.url import make_url
 from langchain_openai import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser 
+from langchain_community.document_loaders import JSONLoader
 from langchain_pymupdf4llm import PyMuPDF4LLMLoader
 from langchain_text_splitters import MarkdownHeaderTextSplitter
+from langchain_core.documents import Document
 from langchain.load import dumps, loads
+from tqdm import tqdm
 
-# Extract the database name from the connection string
-database_name = make_url(connection_string).database 
+from langchain_openai import OpenAIEmbeddings
+from TextCleaner import clean_pdf_documents
+
+USE_BOOKS = 'books_pdf'
+
+# Load environment variables from .env file
+load_dotenv()
+
+openai_api_key = os.getenv("OPENAI_API_KEY")
+connection_string = os.getenv("DB_CONNECTION")
+
+embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=openai_api_key)
+
+current_script_dir = os.path.dirname(os.path.abspath(__file__))
+books_dir = os.path.join(current_script_dir, USE_BOOKS)
+book_docs : list[Document] = []
+
+# Setup logger
+log_filename = f"cleaning_{datetime.now().strftime('%Y%m%d')}.log"
+log_filename = os.path.join(current_script_dir, log_filename)
+logging.basicConfig(
+    filename=log_filename,
+    filemode='a',  # 'w' to overwrite, 'a' to append
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 # Define document collections to be stored in PostgreSQL
 collections = {
-    "University_Events": semantic_split_web_docs,    # Web documents chunked semantically
-    "Current_Student_Content": semantic_split_pdf_docs           # Book pages cleaned and used as chunks
+    "Books": None,    # PDF documents converted to Markdown,
 }
 
+# Chunk according to Markdown
+text_splitter = MarkdownHeaderTextSplitter(
+    headers_to_split_on=[('#', 'Header 1'), ('##', "Header 2"), ("###", "Header 3"), ("####", "Header 4"), ("#####", "Header 5")], 
+    strip_headers=False
+)
+
+
+# Convert PDFS to Markdown
+def convert_books() -> list[Document]:
+    global book_docs
+    for book in tqdm(os.listdir(books_dir), desc="chunking docs"):
+        print(book)
+        fp = os.path.join(books_dir, book)
+        book_name, filetype = os.path.splitext(book)
+        if filetype == '.pdf' or filetype == ".txt":
+            docs = PyMuPDF4LLMLoader(file_path=os.path.join(books_dir, book), mode='single').load()
+            book_docs.extend(docs)
+            print(f"Number of documents: {len(docs)}")
+    
+    print(f"Number of books: {len(book_docs)}")
+
+    # Clean PDFs
+    book_docs, cleaning_stats = clean_pdf_documents(book_docs, min_content_length=20, verbose=False)
+
+    # This takes 4 minutes
+    chunks = []
+    for b in tqdm(book_docs, desc="chunking books by markdown header"):
+        new_chunks = text_splitter.split_text(b.page_content)
+        for c in new_chunks:
+            c.metadata.update(b.metadata)
+        chunks.extend(new_chunks)
+    
+    # Log the cleaning stats
+    logging.info("Cleaning statistics:")
+    logging.info(cleaning_stats)
+
+    print(f"Cleaning stats saved to {log_filename}")
+    return chunks    
+    
+
 # Load documents into PostgreSQL vector database
-databases = {}
-for name, docs in collections.items():
-    databases[name] = PGVector.from_documents(
-        embedding=embedding_model,      # OpenAI embeddings for vectorization
-        documents=docs,                 # The documents to be stored 
-        collection_name=name,           # The name of the collection in PostgreSQL
-        connection=connection_string,   # Connection string to the PostgreSQL database
-        use_jsonb=True      # Store metadata as JSONB for efficient querying
-    )
+def load_documents(docs: List[Document])  -> PGVector:
+    global collections
+    databases = {}
+    print(f"Number of docs attempted to be loaded: {len(docs)}")
+    for name, docs in collections.items():
+        pg_vector_args = dict(
+            embedding=embedding_model,      # OpenAI embeddings for vectorization
+            documents=docs,                 # The documents to be stored 
+            collection_name=name,           # The name of the collection in PostgreSQL
+            connection=connection_string,   # Connection string to the PostgreSQL database
+            use_jsonb=True      # Store metadata as JSONB for efficient querying
+        )
+        print(pg_vector_args)
+        
+        book_data_vector_store = PGVector.from_documents(
+            **pg_vector_args
+        )
+        databases[name] = book_data_vector_store
+    # Extract the database name from the connection string
+    database_name = make_url(connection_string).database
 
     # Display confirmation message
     print(f" Successfully loaded {len(docs)} chunks into '{name}' collection in '{database_name}'.")
+    return book_data_vector_store
+    
+
+def  main():
+    global collections
+    chunks = convert_books()
+    collections["Books"] = chunks
+
+    print(f"Number of chunks: {len(chunks)}")
+    vector_db = load_documents(collections["Books"])
+
+if __name__ == "__main__":
+    main()
+
