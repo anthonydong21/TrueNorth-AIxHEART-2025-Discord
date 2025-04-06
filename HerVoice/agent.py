@@ -423,6 +423,7 @@ Always end with a helpful suggestion, encouraging message, or thoughtful follow-
 
 web_search_tool = TavilySearchResults(
     max_results=5,
+    days=365,
     search_depth="advanced",        # Uses advanced search depth for more accurate results
     include_answer=True,            # Include a short answer to original query in the search results.
     tavily_api_key= tavily_api_key  # You have defined this API key in the .env file.
@@ -609,8 +610,11 @@ async def grade_documents_parallel(state):
             document=doc,
             question=question
         )
-        grader_result = await llm_gemini.with_structured_output(schema=RelevanceScore).ainvoke(relevance_grader_prompt)
-        return grader_result
+        try:
+            grader_result = await llm_gemini.with_structured_output(schema=RelevanceScore).ainvoke(relevance_grader_prompt)
+            return grader_result
+        except:
+            return {}
     
     tasks = [grade_document(doc, question) for doc in documents]
     results = await asyncio.gather(*tasks)
