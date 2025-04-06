@@ -23,7 +23,7 @@ from langchain_core.documents import Document
 from langchain.load import dumps, loads
 from tqdm import tqdm
 
-from langchain_openai import OpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from TextCleaner import clean_pdf_documents
 
 USE_BOOKS = 'books_pdf'
