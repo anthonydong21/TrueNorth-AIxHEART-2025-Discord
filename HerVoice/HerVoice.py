@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 import os
 import google.generativeai as genai
 import base64
+from AnswerGenerator import generate_answer
+
 
 import streamlit as st
 st.set_page_config(
@@ -47,10 +49,10 @@ def get_image_base64(path):
     with open(path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-logo_base64 = get_image_base64("img/minilogo.png")  # or logo.png
+logo_base64 = get_image_base64("C:/Users/Varsha Shetty/OneDrive/Desktop/IST 345/project/sf-hacks-2025/img/minilogo.png")  # or logo.png
 
 
-img_base64 = get_image_base64("img/logo.png")
+img_base64 = get_image_base64("C:/Users/Varsha Shetty/OneDrive/Desktop/IST 345/project/sf-hacks-2025/img/logo.png")
 
 with st.container():
     st.markdown(f"""
@@ -60,7 +62,7 @@ with st.container():
     """, unsafe_allow_html=True)
 
 
-img_bg = get_image_base64("img/bg.jpg")
+img_bg = get_image_base64("C:/Users/Varsha Shetty/OneDrive/Desktop/IST 345/project/sf-hacks-2025/img/bg.jpg")
 
 page_bg_img = f"""
 <style>
@@ -119,15 +121,19 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # Function to get response from Gemini
-def get_hervoice_response(prompt, chat_history):
-    messages = [{"role": "user", "parts": [msg.content]} if isinstance(msg, HumanMessage)
-                else {"role": "model", "parts": [msg.content]}
-                for msg in chat_history]
+# def get_hervoice_response(prompt, chat_history):
+#     messages = [{"role": "user", "parts": [msg.content]} if isinstance(msg, HumanMessage)
+#                 else {"role": "model", "parts": [msg.content]}
+#                 for msg in chat_history]
 
-    messages.append({"role": "user", "parts": [prompt]})
+#     messages.append({"role": "user", "parts": [prompt]})
     
-    response = model.generate_content(messages)
-    return response.text
+#     response = model.generate_content(messages)
+#     return response.text
+
+def get_hervoice_response(prompt, chat_history):
+    response, usage = generate_answer(prompt)
+    return response
 
 # Display chat history
 from langchain_core.messages import HumanMessage, AIMessage
@@ -142,7 +148,7 @@ for message in st.session_state.chat_history:
 
 # Intro message
 if not st.session_state.chat_history:
-    with st.chat_message("ai", avatar="img/minilogo.png"):
+    with st.chat_message("ai", avatar="C:/Users/Varsha Shetty/OneDrive/Desktop/IST 345/project/sf-hacks-2025/img/minilogo.png"):
         st.markdown("**Hello, I'm HerVoice – your friendly STEM ally. How can I support you today?**")
 
 
@@ -150,15 +156,16 @@ if not st.session_state.chat_history:
 user_query = st.chat_input("Enter your question or concern here...")
 
 
-# if user_query:
-#     st.session_state.chat_history.append(HumanMessage(user_query))
-    
-#     with st.chat_message("Human"):
-#         st.markdown(user_query)
-    
-#     with st.chat_message("AI"):
-#         with st.spinner("HerVoice is thinking..."):
-#             ai_response = get_hervoice_response(user_query, st.session_state.chat_history)
-#         st.markdown(ai_response)
-    
-#     st.session_state.chat_history.append(AIMessage(ai_response))
+if user_query:
+    st.session_state.chat_history.append(HumanMessage(user_query))
+
+    with st.chat_message("Human"):
+        st.markdown(user_query)
+
+    with st.chat_message("AI"):
+        with st.spinner("HerVoice is thinking..."):
+            ai_response = get_hervoice_response(user_query, st.session_state.chat_history)
+        st.markdown(ai_response)
+
+    st.session_state.chat_history.append(AIMessage(ai_response))
+
