@@ -37,7 +37,7 @@ tavily_api_key =os.getenv("TAVILY_API_KEY")
 # embedding_model = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
 
 embedding_model = GoogleGenerativeAIEmbeddings(
-    model="textembedding-gecko@001",
+    model="text-embedding-004",
     google_api_key=os.getenv("GEMINI_API_KEY"),  # make sure it's in your .env
     task_type="semantic_similarity"
 )
