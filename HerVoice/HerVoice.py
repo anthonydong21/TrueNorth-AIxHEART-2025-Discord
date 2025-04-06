@@ -1,12 +1,16 @@
 import streamlit as st
 from dotenv import load_dotenv
 import os
-import google.generativeai as genai
 import base64
 from AnswerGenerator import generate_answer
 
 
 import streamlit as st
+
+current_script_dir = os.path.dirname(os.path.abspath(__file__))
+repo_dir = os.path.dirname(current_script_dir)
+media_dir = os.path.join(repo_dir, 'img')
+
 st.set_page_config(
     page_title="HerVoice – Women in STEM Chatbot",
     page_icon="💬",
@@ -49,10 +53,10 @@ def get_image_base64(path):
     with open(path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-logo_base64 = get_image_base64("C:/Users/Varsha Shetty/OneDrive/Desktop/IST 345/project/sf-hacks-2025/img/minilogo.png")  # or logo.png
+logo_base64 = get_image_base64(f"{media_dir}/minilogo.png")  # or logo.png
 
 
-img_base64 = get_image_base64("C:/Users/Varsha Shetty/OneDrive/Desktop/IST 345/project/sf-hacks-2025/img/logo.png")
+img_base64 = get_image_base64(f"{media_dir}/logo.png")
 
 with st.container():
     st.markdown(f"""
@@ -62,7 +66,7 @@ with st.container():
     """, unsafe_allow_html=True)
 
 
-img_bg = get_image_base64("C:/Users/Varsha Shetty/OneDrive/Desktop/IST 345/project/sf-hacks-2025/img/bg.jpg")
+img_bg = get_image_base64(f"{media_dir}/bg.jpg")
 
 page_bg_img = f"""
 <style>
@@ -111,8 +115,8 @@ load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # Configure Gemini
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel("gemini-pro")
+# genai.configure(api_key=GOOGLE_API_KEY)
+# model = genai.GenerativeModel("gemini-pro")
 
 # App settings
 
@@ -148,7 +152,7 @@ for message in st.session_state.chat_history:
 
 # Intro message
 if not st.session_state.chat_history:
-    with st.chat_message("ai", avatar="C:/Users/Varsha Shetty/OneDrive/Desktop/IST 345/project/sf-hacks-2025/img/minilogo.png"):
+    with st.chat_message("ai", avatar=f"{media_dir}/minilogo.png"):
         st.markdown("**Hello, I'm HerVoice – your friendly STEM ally. How can I support you today?**")
 
 
