@@ -4,6 +4,7 @@ import os
 import base64
 from AnswerGenerator import generate_answer
 
+from agent import graph
 
 import streamlit as st
 
@@ -160,6 +161,19 @@ if not st.session_state.chat_history:
 user_query = st.chat_input("Enter your question or concern here...")
 
 
+# if user_query:
+#     st.session_state.chat_history.append(HumanMessage(user_query))
+
+#     with st.chat_message("Human"):
+#         st.markdown(user_query)
+
+#     with st.chat_message("AI"):
+#         with st.spinner("HerVoice is thinking..."):
+#             ai_response = get_hervoice_response(user_query, st.session_state.chat_history)
+#         st.markdown(ai_response)
+
+#     st.session_state.chat_history.append(AIMessage(ai_response))
+
 if user_query:
     st.session_state.chat_history.append(HumanMessage(user_query))
 
@@ -168,8 +182,9 @@ if user_query:
 
     with st.chat_message("AI"):
         with st.spinner("HerVoice is thinking..."):
-            ai_response = get_hervoice_response(user_query, st.session_state.chat_history)
-        st.markdown(ai_response)
-
-    st.session_state.chat_history.append(AIMessage(ai_response))
+            graph_output = graph.invoke({"question": user_query})
+            final_answer = graph_output.get("generation", "I'm here to support you. How can I help?")
+        
+        st.markdown(final_answer)
+        st.session_state.chat_history.append(AIMessage(final_answer))
 
