@@ -37,7 +37,7 @@ connection_string = os.getenv("DB_CONNECTION")
 
 # embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=openai_api_key)
 embedding_model = GoogleGenerativeAIEmbeddings(
-    model="textembedding-gecko@001",
+    model="text-embedding-004",
     google_api_key=os.getenv("GEMINI_API_KEY"),  # make sure it's in your .env
     task_type="semantic_similarity"
 )
