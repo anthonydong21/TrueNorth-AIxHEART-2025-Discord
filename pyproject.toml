@@ -1,5 +1,6 @@
 [project]
 name = "hervoice"
+package-mode = false
 version = "0.1.0"
 description = ""
 authors = [
@@ -36,7 +37,7 @@ dependencies = [
     "langchain-huggingface (>=0.1.2,<0.2.0)",
     "langchain-pymupdf4llm (>=0.2.0,<0.3.0)",
     "langgraph (>=0.3.21,<0.4.0)",
-    "streamlit-feedback (>=0.1.4,<0.2.0)"
+    "streamlit-feedback (>=0.1.4,<0.2.0)",
     "jq (>=1.8.0,<2.0.0)"
 ]
 
