@@ -34,7 +34,11 @@ load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 connection_string = os.getenv("DB_CONNECTION")
 
-embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=openai_api_key)
+# embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=openai_api_key)
+embedding_model = GoogleGenerativeAIEmbeddings(
+    model="models/text-embedding-004",
+    google_api_key=os.getenv("GEMINI_API_KEY")  # make sure it's in your .env
+)
 
 current_script_dir = os.path.dirname(os.path.abspath(__file__))
 books_dir = os.path.join(current_script_dir, USE_BOOKS)
