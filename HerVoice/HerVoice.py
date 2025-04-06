@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 import base64
 from AnswerGenerator import generate_answer
+from langchain_core.messages import HumanMessage, AIMessage
 
 from agent import graph
 
@@ -18,6 +19,11 @@ st.set_page_config(
      layout="wide",
 )
 
+examples = [
+    "I'm a junior software engineer who has been constantly interrupted and ignored at work. I feel so annoyed what should I do about it?",
+    "I am a team member at my work and I just returned from my leave. For some reason I feel like I missed out on something because everyone is doing this project but me? They won't include me or anything it feels alienating what should I do????",
+    "I'm a graduate student and in my lab meeting I got the feeling that someone slightly talked negative about me and it has really got my nerve. It feels wrong from them to have done that"
+]
 
 # Sidebar: HerVoice Mission Support
 with st.sidebar:
@@ -25,7 +31,7 @@ with st.sidebar:
     st.subheader("Our Mission 💜")  # Focused on your project mission
 
     st.write("""
-    We are here to uplift and empower women in Science, Technology, Engineering, and Mathematics (STEM).
+    We are here to uplift and empower women and other voices in Science, Technology, Engineering, and Mathematics (STEM).
 
     👩‍🔬 Our chatbot offers:
     - A safe, anonymous space for sharing challenges  
@@ -34,17 +40,35 @@ with st.sidebar:
     - Resources for opportunities  
 
     HerVoice believes that every voice matters — especially yours.
-    """)
-
+    """
+    )
     st.subheader("Focus Areas")
     st.write("""
     - 💼 Navigating Workplace Challenges  
     - 🧑‍🏫 Finding Mentorship  
     - 🧠 Building Confidence in STEM  
-    - 🔍 Anonymous Guidance
+    - 🔍 Anonymous, Neutral Guidance
     """)
 
     # Reset conversation button
+    st.markdown("### Try an example:")
+    for i, example in enumerate(examples):
+        if st.button(f"Example {i+1}"):
+            st.session_state.chat_history = [HumanMessage(example)]  # store temporarily
+
+            with st.chat_message("ai", avatar=f"{media_dir}/minilogo.png"):
+                with st.spinner("HerVoice is thinking..."):
+                    graph_output = graph.invoke({"question": example})
+                    final_answer = graph_output.get("generation", "I'm here to support you. How can I help?")
+                    final_answer = final_answer()
+            
+            st.markdown(final_answer)
+            
+            print(f"final answer: {final_answer}")
+            print(f"final answer type: {type(final_answer)}")
+            st.session_state.chat_history.append(AIMessage(final_answer))
+            st.rerun()
+
     if st.button("Reset Conversation 🔄", use_container_width=True):
         st.session_state.chat_history = []
         st.rerun()
@@ -66,8 +90,8 @@ with st.container():
         </div>
     """, unsafe_allow_html=True)
 
-
-img_bg = get_image_base64(f"{media_dir}/bg.jpg")
+st.image(f"{media_dir}/bg.png")
+# img_bg = get_image_base64(f"{media_dir}/bg.jpg")
 
 page_bg_img = f"""
 <style>
@@ -141,7 +165,6 @@ def get_hervoice_response(prompt, chat_history):
     return response
 
 # Display chat history
-from langchain_core.messages import HumanMessage, AIMessage
 
 for message in st.session_state.chat_history:
     if isinstance(message, HumanMessage):
@@ -155,6 +178,7 @@ for message in st.session_state.chat_history:
 if not st.session_state.chat_history:
     with st.chat_message("ai", avatar=f"{media_dir}/minilogo.png"):
         st.markdown("**Hello, I'm HerVoice – your friendly STEM ally. How can I support you today?**")
+
 
 
 # Chat input
@@ -180,7 +204,7 @@ if user_query:
     with st.chat_message("Human"):
         st.markdown(user_query)
 
-    with st.chat_message("AI"):
+    with st.chat_message("ai", avatar=f"{media_dir}/minilogo.png"):
         with st.spinner("HerVoice is thinking..."):
             graph_output = graph.invoke({"question": str(user_query)})
             final_answer = graph_output.get("generation", "I'm here to support you. How can I help?")
