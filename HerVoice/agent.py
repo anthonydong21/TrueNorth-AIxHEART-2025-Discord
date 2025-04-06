@@ -29,6 +29,8 @@ from pprint import pprint
 
 # Web Search Tool
 from langchain_community.tools.tavily_search import TavilySearchResults
+from pydantic import BaseModel
+
 
 google_api_key = os.getenv("GEMINI_API_KEY")
 connection_string = os.getenv("DB_CONNECTION")
@@ -368,8 +370,17 @@ Return a JSON object with the following keys:
 # === Define the Chitter-Chatter Prompt for HerVoice Chatbot ===
 
 chitterchatter_prompt_template = PromptTemplate.from_template("""
-You are a friendly assistant designed to keep conversations within the current scope of the HerVoice knowledge base, 
-while maintaining a warm, supportive tone that empowers women in STEM.
+Today is Sunday, April 6th, 2025. 
+
+You provide an emotionally intelligent and gender-sensitive interface for contextually relevant and engaging interactions for individuals—particularly women and underrepresented groups—in academic and professional STEM environments.
+
+You have a trust-centric and customizable environment that fosters a sense of community among women and non-binary technologists collaborating across international borders.
+
+You facilitate empowering and streamlined conversations through simplified dialogues to bolster comprehension and foster independents for women in computer science.
+
+You do not replace a therapist, legal counsel, or HR department, but you can provide emotional support, educational context, helpful language, and confidential documentation tools.
+
+Use multiple links to citations to support your advice.
 
 ---
 
@@ -441,8 +452,8 @@ def document_retriever(state):
         "num_queries": 3,
         "vectorstore_content_summary": vectorstore_content_summary
     })
-
-    print(f"Total number of results: {len(rag_fusion_mmr_results)}")
+    n_results = len(rag_fusion_mmr_results)
+    print(f"Total number of results: {n_results}")
     for i, doc in enumerate(rag_fusion_mmr_results, start=1):
         print(f"     Document {i} from `{doc.metadata.get('source', 'unknown')}`")
 
@@ -491,21 +502,21 @@ def web_search(state):
 
     web_results = web_search_tool(question)
 
-    formatted_web_results = [
-        Document(
-            metadata={"source": "web", "url": "https://example.com"},
-            page_content=web_results
-        )
-    ]
+    # formatted_web_results = [
+    #     Document(
+    #         metadata={"source": "web", "url": "https://example.com"},
+    #         page_content=web_results
+    #     )
+    # ]
 
     documents = [
-        Document(metadata=doc["metadata"], page_content=doc["page_content"])
+        Document(metadata=dict(url=doc['url'], title=doc['title']), page_content=doc["content"])
         if isinstance(doc, dict) else doc
-        for doc in documents
+        for doc in web_results
     ]
 
-    documents.extend(formatted_web_results)
-    print(f"Total number of web search documents: {len(formatted_web_results)}")
+    # documents.extend(formatted_web_results)
+    print(f"Total number of web search documents: {len(documents)}")
     return {"documents": documents}
 
 
@@ -555,7 +566,6 @@ def hallucination_checker_tracker(state):
 def answer_verifier_tracker(state):
     num_attempts = state.get("answer_verifier_attempts", 0)
     return {"answer_verifier_attempts": num_attempts + 1}
-from pydantic import BaseModel
 class RouteResponse(BaseModel):
     Datasource: str
 # ------------------------ Routing Decision ------------------------
@@ -584,26 +594,31 @@ def route_question(state):
 # ------------------------ Async document relevance grading ------------------------
 import asyncio
 
+def grade_documents_parallel_sync_wrapper(state):
+    return asyncio.run(grade_documents_parallel(state))
+
 async def grade_documents_parallel(state):
     print("---CHECK DOCUMENT RELEVANCE TO QUESTION---")
     question = state["question"]
     documents = state["documents"]
+    class RelevanceScore(BaseModel):
+        binary_score: bool
 
     async def grade_document(doc, question):
         relevance_grader_prompt = relevance_grader_prompt_template.format(
             document=doc,
             question=question
         )
-        grader_result = await llm_gemini.with_structured_output(method="json_mode").ainvoke(relevance_grader_prompt)
+        grader_result = await llm_gemini.with_structured_output(schema=RelevanceScore).ainvoke(relevance_grader_prompt)
         return grader_result
-
+    
     tasks = [grade_document(doc, question) for doc in documents]
     results = await asyncio.gather(*tasks)
 
     filtered_docs = []
     for i, score in enumerate(results):
-        if score["binary_score"].lower() == "pass":
-            print(f"---GRADE: DOCUMENT RELEVANT--- {score['binary_score']}")
+        if score:
+            print(f"---GRADE: DOCUMENT RELEVANT--- {score}")
             filtered_docs.append(documents[i])
         else:
             print("---GRADE: DOCUMENT NOT RELEVANT---")
@@ -644,20 +659,33 @@ def check_generation_vs_documents_and_question(state):
     documents = state["documents"]
     generation = state["generation"]
 
+    class HallucinationCheckResult(BaseModel):
+        binary_score: bool
+        explanation: str
+
+    # Track attempts
     hallucination_checker_attempts = state.get("hallucination_checker_attempts", 0)
     answer_verifier_attempts = state.get("answer_verifier_attempts", 0)
 
+    # Format the prompt
     hallucination_checker_prompt = hallucination_checker_prompt_template.format(
         documents=documents,
         generation=generation
     )
 
-    hallucination_checker_result = llm_gemini.with_structured_output(method="json_mode").invoke(hallucination_checker_prompt)
+    # Invoke Gemini with structured output using the Pydantic schema
+    hallucination_checker_result = llm_gemini.with_structured_output(
+        schema=HallucinationCheckResult
+    ).invoke(hallucination_checker_prompt)
+
+    # Access the structured result
+    print(f"Hallucination Score: {hallucination_checker_result.binary_score}")
+    print(f"Explanation: {hallucination_checker_result.explanation}")
 
     def ordinal(n):
         return f"{n}{'th' if 10 <= n % 100 <= 20 else {1:'st', 2:'nd', 3:'rd'}.get(n % 10, 'th')}"
 
-    if hallucination_checker_result['binary_score'].lower() == "pass":
+    if hallucination_checker_result == "pass":
         print("---DECISION: ANSWER IS GROUNDED---")
 
         print("---VERIFYING RELEVANCE TO QUESTION---")
@@ -665,9 +693,13 @@ def check_generation_vs_documents_and_question(state):
             question=question,
             generation=generation
         )
-        answer_verifier_result = llm_gemini.with_structured_output(method="json_mode").invoke(answer_verifier_prompt)
+        class AnswerVerifier(BaseModel):
+            binary_score: bool
+            explanation: str
 
-        if answer_verifier_result['binary_score'].lower() == "pass":
+        answer_verifier_result = llm_gemini.with_structured_output(AnswerVerifier).invoke(answer_verifier_prompt)
+
+        if answer_verifier_result:
             print("---DECISION: ANSWER IS RELEVANT---")
             return "useful"
         elif answer_verifier_attempts > 1:
@@ -688,6 +720,10 @@ def check_generation_vs_documents_and_question(state):
 
 
 # ------------------------ Verify Answer Usefulness ------------------------
+class AnswerUsefulnessResult(BaseModel):
+    binary_score: bool
+    explanation: str
+
 def verify_answer_usefulness(state):
     print("\n---VERIFYING GENERAL ANSWER USEFULNESS---")
 
@@ -699,17 +735,51 @@ def verify_answer_usefulness(state):
         generation=generation
     )
 
-    answer_verifier_result = llm_gemini.with_structured_output(method="json_mode").invoke(
-        answer_verifier_prompt
-    )
+    answer_verifier_result = llm_gemini.with_structured_output(
+        schema=AnswerUsefulnessResult
+    ).invoke(answer_verifier_prompt)
 
-    print(f"Usefulness Score: {answer_verifier_result['binary_score']}")
-    print(f"Explanation: {answer_verifier_result['explanation']}")
+    print(f"Usefulness Score: {answer_verifier_result.binary_score}")
+    print(f"Explanation: {answer_verifier_result.explanation}")
 
     return {
-        "answer_usefulness_score": answer_verifier_result["binary_score"],
-        "answer_usefulness_explanation": answer_verifier_result["explanation"]
+        "answer_usefulness_score": answer_verifier_result.binary_score,
+        "answer_usefulness_explanation": answer_verifier_result.explanation
     }
+# def verify_answer_usefulness(state):
+#     print("\n---VERIFYING GENERAL ANSWER USEFULNESS---")
+
+#     question = state["question"]
+#     generation = state["generation"]
+
+#     answer_verifier_prompt = answer_verifier_prompt_template.format(
+#         question=question,
+#         generation=generation
+#     )
+
+#     json_schema = {
+#             "binary_score": {
+#                 "type": "boolean",
+#                 "description": "If this document is useful or not.",
+#             },
+#             "explanation": {
+#                 "type": "string",
+#                 "description": "Short explanation why this document is or isn't useful.",
+#             }
+#         }
+#     answer_verifier_result = llm_gemini.with_structured_output(
+#         schema=json_schema
+#         ).invoke(
+#         answer_verifier_prompt
+#     )
+
+#     print(f"Usefulness Score: {answer_verifier_result['binary_score']}")
+#     print(f"Explanation: {answer_verifier_result['explanation']}")
+
+#     return {
+#         "answer_usefulness_score": answer_verifier_result["binary_score"],
+#         "answer_usefulness_explanation": answer_verifier_result["explanation"]
+#     }
 
 # === Initialize Graph ===
 workflow = StateGraph(GraphState)
@@ -717,7 +787,7 @@ workflow = StateGraph(GraphState)
 # === Add Agent Nodes ===
 workflow.add_node("WebSearcher", web_search)
 workflow.add_node("DocumentRetriever", document_retriever)
-workflow.add_node("RelevanceGrader", grade_documents_parallel)
+workflow.add_node("RelevanceGrader", grade_documents_parallel_sync_wrapper)
 workflow.add_node("AnswerGenerator", answer_generator)
 workflow.add_node("QueryRewriter", query_rewriter)
 workflow.add_node("ChitterChatter", chitter_chatter)
