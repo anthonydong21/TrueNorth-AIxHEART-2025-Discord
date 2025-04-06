@@ -516,7 +516,7 @@ def chitter_chatter(state):
 
     chitterchatter_response = llm_gemini.invoke(
         [
-            SystemMessage(chitterchatter_prompt_template),
+            SystemMessage(str(chitterchatter_prompt_template)),
             HumanMessage(question)
         ]
     )
@@ -566,7 +566,9 @@ def route_question(state):
         [SystemMessage(query_router_prompt), HumanMessage(question)]
     )
 
-    parsed_router_output = route_question_response["Datasource"]
+    print(f"Response: {route_question_response}")
+    print(f"Response type: {type(route_question_response)}")
+    parsed_router_output = route_question_response.Datasource
 
     if parsed_router_output == "Websearch":
         print("---ROUTING QUESTION TO WEB SEARCH---")
