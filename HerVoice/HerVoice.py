@@ -13,7 +13,7 @@ repo_dir = os.path.dirname(current_script_dir)
 media_dir = os.path.join(repo_dir, 'img')
 
 st.set_page_config(
-    page_title="HerVoice – Women in STEM Chatbot",
+    page_title="HerVoice – Chatbot for Women in STEM",
     page_icon="💬",
      layout="wide",
 )
@@ -182,9 +182,15 @@ if user_query:
 
     with st.chat_message("AI"):
         with st.spinner("HerVoice is thinking..."):
-            graph_output = graph.invoke({"question": user_query})
+            graph_output = graph.invoke({"question": str(user_query)})
             final_answer = graph_output.get("generation", "I'm here to support you. How can I help?")
+            final_answer = final_answer()
         
         st.markdown(final_answer)
+        
+        print(f"final answer: {final_answer}")
+        print(f"final answer type: {type(final_answer)}")
         st.session_state.chat_history.append(AIMessage(final_answer))
+
+        # st.session_state.chat_history.append(AIMessage(final_answer))
 
