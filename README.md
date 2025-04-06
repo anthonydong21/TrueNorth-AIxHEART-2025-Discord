@@ -1,4 +1,32 @@
-# HerVoice
+# 💜 HerVoice – AI Chatbot Empowering Women in STEM
+
+HerVoice is an AI-powered support assistant designed to empower women in STEM (Science, Technology, Engineering, and Mathematics). It provides a safe and anonymous space for mentorship, career guidance, emotional support, and navigating workplace challenges.
+
+---
+## ✨ Features
+
+- 🤖 **Conversational Agent** built with Google Gemini for empathetic and informative support  
+- 🔍 **Multi-query Retrieval-Augmented Generation (RAG)** with MMR and RRF for accurate answers  
+- 📚 **Custom Vector Database** using `PGVector` to index curated resources and books  
+- 🌐 **Tavily Web Search** integration for current, real-world information  
+- ✅ **Answer Verification** using hallucination and relevance grading  
+- 🧠 **Query Rewriting** for improving search coverage  
+- 🎨 **Streamlit Frontend** with a feminine and empowering aesthetic  
+
+---
+
+## 🛠️ Tech Stack
+
+| Component    | Technology                              |
+|--------------|------------------------------------------|
+| LLM          | Google Gemini (via `langchain_google_genai`) |
+| Vector Store | PostgreSQL + pgvector                    |
+| Embeddings   | GoogleGenerativeAIEmbeddings             |
+| Frontend     | Streamlit                                |
+| Web Search   | Tavily API                               |
+| Orchestration| LangGraph                                |
+
+---
 
 ## Poetry Setup
 
@@ -24,3 +52,11 @@ export GOOGLE_GENAI_USE_VERTEXAI=True
 ```
 
 You also need the JSON file that is mentioned in `GOOGLE_APPLICATION_CREDENTIALS`.
+
+# To preprocess and embed PDFs into the vectorstore:
+
+```python Knowledge.py```
+
+# Launch the Chatbot
+
+```streamlit run HerVoice.py```
