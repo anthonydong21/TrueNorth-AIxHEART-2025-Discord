@@ -90,8 +90,8 @@ with st.container():
         </div>
     """, unsafe_allow_html=True)
 
-st.image(f"{media_dir}/bg.png")
-# img_bg = get_image_base64(f"{media_dir}/bg.jpg")
+# st.image(f"{media_dir}/bg.png")
+img_bg = get_image_base64(f"{media_dir}/bg.jpg")
 
 page_bg_img = f"""
 <style>
