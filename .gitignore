@@ -1,3 +1,4 @@
 .env
 __pycache__
 books_pdf/*.pdf
+.DS_Store
