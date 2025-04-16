@@ -38,6 +38,10 @@ Then, `cd` into the directory that contains pyproject.toml and poetry.lock. Inst
 ```
 poetry install
 ```
+Now you can update your virtual environment that Poetry made:
+```
+source .venv/bin/activate
+```
 
 ## Gemini Setup
 You need an `.env` file with these values set up:
