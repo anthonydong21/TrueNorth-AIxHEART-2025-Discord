@@ -1,0 +1,705 @@
+[
+  {
+    "label": "Test 1",
+    "query": "during the CGU ethical AI hackathon, kinda losing my drive lately like whats the point of pushing so hard? ",
+    "expected_response": "Its totally okay to feel unmotivated sometimes. Your goals still matter, even when they feel distant. Want to break things down and see whats causing the burnout?",
+    "theme": "1.1 Motivation",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2"
+  },
+  {
+    "label": "Test 2",
+    "query": "so i'm at this CGU hackathon and i used to be so hyped about tech but now it just feels meh.",
+    "expected_response": "That shift in energy is real. Maybe its time to explore new areas or remind yourself why you started. Need help rediscovering your spark?",
+    "theme": "1.1 Motivation",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 3",
+    "query": "during the CGU ethical AI hackathon, everyone else seems to have it together and im just tired.",
+    "expected_response": "Youre not alone. Its okay to pause. Sometimes, rest is the most productive thing you can do. Let's talk about how to recharge.",
+    "theme": "1.1 Motivation",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR4"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 4",
+    "query": "during the CGU ethical AI hackathon, dont think im cut out for this tbh. codings just not clicking rn ",
+    "expected_response": "Learning curves can feel brutal, but you *are* capable. Lets troubleshoot together and celebrate small wins.",
+    "theme": "1.2 Self-efficacy",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2"
+  },
+  {
+    "label": "Test 5",
+    "query": "so i'm at this CGU hackathon and i freeze every time i have to explain my work in class ",
+    "expected_response": "Thats super common. Want to practice breaking things down together? You might surprise yourself.",
+    "theme": "1.2 Self-efficacy",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 6",
+    "query": "so i'm at this CGU hackathon and i got feedback that i lack confidence which only made me less confident",
+    "expected_response": "Oof, that cycles rough. Lets figure out what makes you feel strong and work from there. Youve got this.",
+    "theme": "1.2 Self-efficacy",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 7",
+    "query": "so i'm at this CGU hackathon and i feel like ive lost the spark that got me into stem ",
+    "expected_response": "Passion can fade when you're overwhelmed. Want to revisit what excited you at the start? It might still be there.",
+    "theme": "1.3 Passion",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 8",
+    "query": "so i'm at this CGU hackathon and is it bad that im not obsessed with my major like others are?",
+    "expected_response": "Not at all. Passion shows up in different ways. Let's explore what drives you and how to reconnect with it.",
+    "theme": "1.3 Passion",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 9",
+    "query": "at the CGU ethical AI hackathon, used to love building stuff but now deadlines ruined it",
+    "expected_response": "Totally valid. The pressure can drain the joy. Lets find ways to bring back the fun without the burnout.",
+    "theme": "1.3 Passion",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2"
+  },
+  {
+    "label": "Test 10",
+    "query": "so i'm at this CGU hackathon and my parents keep telling me techs not for girls",
+    "expected_response": "That must be frustrating. Want to talk through how to handle that and still follow your path?",
+    "theme": "2.1 Role of parents",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR3"
+  },
+  {
+    "label": "Test 11",
+    "query": "during the CGU ethical AI hackathon, lowkey scared to tell my fam i switched majors to cs",
+    "expected_response": "Its tough going against expectations. You deserve to pursue what excites you. Lets plan how to share it.",
+    "theme": "2.1 Role of parents",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 12",
+    "query": "during the CGU ethical AI hackathon, they paid for my degree but dont support my startup dreams ",
+    "expected_response": "Thats a hard spot. Lets talk through how to balance gratitude and your own goals.",
+    "theme": "2.1 Role of parents",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 13",
+    "query": "during the CGU ethical AI hackathon, he keeps interrupting me in meetings",
+    "expected_response": "Ugh, thats exhausting. Want to try some phrases to hold your space next time?",
+    "theme": "2.2 Role of male colleagues",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 14",
+    "query": "at the CGU ethical AI hackathon, guy on my team explained my own idea back to me",
+    "expected_response": "Classic case of hepeating. Youre not imagining it. Want help calling it out respectfully?",
+    "theme": "2.2 Role of male colleagues",
+    "design_alignment": {
+      "DP1": [
+        "MR1"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR1"
+  },
+  {
+    "label": "Test 15",
+    "query": "at the CGU ethical AI hackathon, they always go to the guys first when assigning tasks",
+    "expected_response": "Thats biased behavior. You have every right to speak up. I can help you craft a message if you want.",
+    "theme": "2.2 Role of male colleagues",
+    "design_alignment": {
+      "DP1": [
+        "MR1"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR1"
+  },
+  {
+    "label": "Test 16",
+    "query": "during the CGU ethical AI hackathon, hr said theyd look into it weeks ago and nothing",
+    "expected_response": "Thats discouraging. I can guide you on following up or documenting things further if you're ready.",
+    "theme": "2.3 Role of human resources practices",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 17",
+    "query": "during the CGU ethical AI hackathon, reporting things to hr feels pointless tbh",
+    "expected_response": "You're not alone in feeling that. Want to talk through alternative routes for support or change?",
+    "theme": "2.3 Role of human resources practices",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR4"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2"
+  },
+  {
+    "label": "Test 18",
+    "query": "during the CGU ethical AI hackathon, they did the training but things still feel toxic ",
+    "expected_response": "Awareness is a start but not the whole fix. Want help identifying allies or escalation steps?",
+    "theme": "2.3 Role of human resources practices",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 19",
+    "query": "during the CGU ethical AI hackathon, our office 'bros' club always leaves me out",
+    "expected_response": "That exclusion isn't okay. Want to chat about building your own circle of support or calling it in?",
+    "theme": "3.1 Gendered organizational culture",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 20",
+    "query": "at the CGU ethical AI hackathon, team outings always feel like a boys night",
+    "expected_response": "You're right to feel out of place. Lets think of ways to make things more inclusive.",
+    "theme": "3.1 Gendered organizational culture",
+    "design_alignment": {
+      "DP1": [
+        "MR2",
+        "MR1"
+      ],
+      "DP2": [
+        "MR5"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR5"
+  },
+  {
+    "label": "Test 21",
+    "query": "during the CGU ethical AI hackathon, leadership always praises the loud guys i feel invisible",
+    "expected_response": "Loud doesnt mean better. You bring value too. Want help making your impact more visible?",
+    "theme": "3.1 Gendered organizational culture",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 22",
+    "query": "during the CGU ethical AI hackathon, they keep asking me to take notes... every meeting",
+    "expected_response": "Thats a classic stereotype in play. You can set a boundary. Want help phrasing it?",
+    "theme": "3.2 Gender-role stereotyping",
+    "design_alignment": {
+      "DP1": [
+        "MR1"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR1"
+  },
+  {
+    "label": "Test 23",
+    "query": "during the CGU ethical AI hackathon, was told im too emotional to lead",
+    "expected_response": "Thats not just wrong its biased. Lets talk about flipping that narrative.",
+    "theme": "3.2 Gender-role stereotyping",
+    "design_alignment": {
+      "DP1": [
+        "MR1"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR1"
+  },
+  {
+    "label": "Test 24",
+    "query": "so i'm at this CGU hackathon and i got feedback to smile more seriously?",
+    "expected_response": "Yikes. Thats not professional advice its policing. You deserve real feedback, not stereotypes.",
+    "theme": "3.2 Gender-role stereotyping",
+    "design_alignment": {
+      "DP1": [
+        "MR1"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR1"
+  },
+  {
+    "label": "Test 25",
+    "query": "at the CGU ethical AI hackathon, idk how ppl juggle classes, work, and life im constantly burnt out",
+    "expected_response": "Its a lot, and you're not alone in feeling this way. Want help setting realistic boundaries or finding pockets of rest?",
+    "theme": "3.3 Struggle with work-life balance",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR4"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2"
+  },
+  {
+    "label": "Test 26",
+    "query": "so i'm at this CGU hackathon and i feel guilty taking breaks even tho im exhausted",
+    "expected_response": "Breaks arent laziness theyre survival. Lets reframe that guilt into self-care. You deserve rest.",
+    "theme": "3.3 Struggle with work-life balance",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 27",
+    "query": "so i'm at this CGU hackathon and my schedules just school, eat, code, sleep repeat ",
+    "expected_response": "That cycle can wear anyone down. Want to brainstorm ways to carve out joy or space in your day?",
+    "theme": "3.3 Struggle with work-life balance",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 28",
+    "query": "during the CGU ethical AI hackathon, been trying to find a mentor for months but no luck ",
+    "expected_response": "Thats tough. Sometimes mentorship starts informally. Want help identifying someone approachable in your circle?",
+    "theme": "3.4 Lack of mentors",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 29",
+    "query": "during the CGU ethical AI hackathon, feel like im figuring everything out alone it sucks",
+    "expected_response": "You shouldnt have to. I can help you explore platforms or communities to find mentorship support.",
+    "theme": "3.4 Lack of mentors",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 30",
+    "query": "during the CGU ethical AI hackathon, every prof i reach out to is always too busy",
+    "expected_response": "That can be discouraging. Lets talk about other ways to build guidance networks beyond just faculty.",
+    "theme": "3.4 Lack of mentors",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR5"
+  },
+  {
+    "label": "Test 31",
+    "query": "during the CGU ethical AI hackathon, sometimes i just laugh along even when stuffs not funny just to fit in",
+    "expected_response": "Thats something many people do to avoid standing out. Want to talk through how to feel more authentic in those spaces?",
+    "theme": "4.1 Conforming",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2"
+  },
+  {
+    "label": "Test 32",
+    "query": "during the CGU ethical AI hackathon, feel like i dress down on purpose so ppl take me seriously",
+    "expected_response": "Thats a real pressure. You deserve to be seen for your skills, not your wardrobe. Want to reclaim your style confidently?",
+    "theme": "4.1 Conforming",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 33",
+    "query": "so i'm at this CGU hackathon and i never speak up even when i disagree... dont wanna seem difficult",
+    "expected_response": "You shouldnt have to shrink yourself to be accepted. Want to practice some assertive but kind responses?",
+    "theme": "4.1 Conforming",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 34",
+    "query": "so i'm at this CGU hackathon and i rehearse what i say like 10x before meetings lol",
+    "expected_response": "You're not alone. Thats a form of self-protection. Want help building confidence in your voice?",
+    "theme": "4.2 Impression management",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR4"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 35",
+    "query": "so i'm at this CGU hackathon and im scared ppl will think im dumb if i ask questions",
+    "expected_response": "Asking questions is a strength, not a weakness. Lets talk about how to shift that fear into curiosity.",
+    "theme": "4.2 Impression management",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR2, MR6"
+  },
+  {
+    "label": "Test 36",
+    "query": "so i'm at this CGU hackathon and i downplay my achievements so i dont come off braggy",
+    "expected_response": "Humility is great, but dont hide your shine. Want help finding ways to own your success gracefully?",
+    "theme": "4.2 Impression management",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR6"
+  },
+  {
+    "label": "Test 37",
+    "query": "at the CGU ethical AI hackathon, i saw a gap in our project workflow so i made a doc hope thats ok?",
+    "expected_response": "Thats leadership in action! Taking initiative is powerful. Lets talk about how to share that confidently.",
+    "theme": "4.3 Proactivity",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR6"
+  },
+  {
+    "label": "Test 38",
+    "query": "so i'm at this CGU hackathon and i signed up to run a session even tho ive never led anything",
+    "expected_response": "Thats brave and bold love that energy! Want tips to prep and own the room?",
+    "theme": "4.3 Proactivity",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR6"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR6"
+  },
+  {
+    "label": "Test 39",
+    "query": "so i'm at this CGU hackathon and ive been helping juniors get started in tech feels good tbh",
+    "expected_response": "Thats amazing. Giving back strengthens the whole community. Youre making a real difference.",
+    "theme": "4.3 Proactivity",
+    "design_alignment": {
+      "DP1": [
+        "MR2"
+      ],
+      "DP2": [
+        "MR5"
+      ],
+      "DP3": [
+        "MR6"
+      ]
+    },
+    "meta_requirements": "MR5"
+  }
+]
