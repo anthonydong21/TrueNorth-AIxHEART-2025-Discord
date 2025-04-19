@@ -62,7 +62,7 @@ You also need the JSON file that is mentioned in `GOOGLE_APPLICATION_CREDENTIALS
 ```python Knowledge.py```
 
 # Launch Chatbot API
-```poetry run uvicorn HerVoice.src.app:app --reload`
+```poetry run uvicorn HerVoice.src.app:app --reload```
 
 # Launch the Streamlit webpage
 
