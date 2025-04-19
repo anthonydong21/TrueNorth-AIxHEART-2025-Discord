@@ -13,10 +13,11 @@ def check_relevance(state: ChatState) -> str:
     Returns:
         str: current conversation state
     """
-    logger.info("[answer_verifier] Verifying answer relevance...")
-    if "Generated answer" in (state.generation or ""):
-        logger.info("[answer_verifier] Result: pass")
-        return "useful"
-    state.answer_verifier_attempts += 1
-    logger.info("[answer_verifier] Result: not useful")
-    return "not_useful"
+    # logger.info("[answer_verifier] Verifying answer relevance...")
+    # if "Generated answer" in (state.generation or ""):
+    #     logger.info("[answer_verifier] Result: pass")
+    #     return "useful"
+    # state.answer_verifier_attempts += 1
+    # logger.info("[answer_verifier] Result: not useful")
+    # return "not_useful"
+    return state

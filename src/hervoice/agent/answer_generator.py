@@ -15,14 +15,17 @@ Today is {current_datetime}.
                                                                 
 You are an assistant for question-answering tasks.
 
+Here are your goals:
+{goals_as_str}
+
 You do not replace a therapist, legal counsel, or HR department, but you can provide emotional support, educational context, helpful language, and confidential documentation tools.
 
 Use all available links to citations to support your answer.
 
 ---
 
-**Context**:
-Use the following information to help answer the question:
+**Background Knowledge**:
+Use the following background information to help answer the question:
 {context}
 
 ****User Question**:
@@ -31,9 +34,9 @@ Use the following information to help answer the question:
 ---
                                                                 
 **Instructions**:
-1. Base your answer primarily on the context provided.
-2. If the answer is **not present** in the context, say so explicitly.
-3. Keep the answer **short**, **concise**, **accurate**, and **focused** on the question.
+1. Base your answer primarily on the background knowledge provided.
+2. If the answer is **not present** in the knowledge, say so explicitly.
+3. Keep the answer **concise**, **accurate**, and **focused** on the question.
 4. At the end, include a **reference section**:
     - For book-based sources, use **APA-style citations** if possible.
     - For web-based sources, include **page title and URL**.
@@ -93,13 +96,11 @@ def answer_generator(state):
         current_datetime=current_datetime,
         context=documents,
         question=question,
+        goals_as_str=goals_as_str
     )
 
     logger.info(f"Answer generator prompt: {prompt}")
     response = call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=None, agent_name="chitter_chatter_agent")
-
-    # logger.info(f"Current state: {state}")
-    # logger.info(f"Response: {resp`onse}")
 
     state.messages.append(response)
     state.generation = response.content
@@ -107,6 +108,8 @@ def answer_generator(state):
     # if reference_table:
     #     state.generation = [state.generation, '**References:**', state.metadata["Reference Table"]]
 
+    logger.info(f"Current state: {state}")
+    logger.info(f"Response: {response}")
     return state
 
     # End time
