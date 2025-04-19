@@ -55,13 +55,17 @@ export GOOGLE_CLOUD_LOCATION=us-central1
 
 ...check out `.env.example` for a file you can copy.
 
-# To preprocess and embed PDFs into the vectorstore:
+# Setup
+# You need to preprocess and embed PDFs into the vectorstore:
 
 ```python Knowledge.py```
 
+This will take 20+ minutes if you have several PDFs. After you have converted your books to vectors and uploaded them to the PostreSQL database.
+
 # Launch Chatbot API
+This sets up a server that the Streamlit application can send calls to.
 ```poetry run uvicorn HerVoice.src.app:app --reload```
 
 # Launch the Streamlit webpage
-
+You need to have the above chatbot API launched in another terminal before running:
 ```streamlit run HerVoice.py```
