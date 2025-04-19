@@ -95,7 +95,7 @@ class Backtester:
     def __init__(
         self,
         agent: Callable,
-        model_name: str = "SmolLM",
+        model_name: str = "smollm:1.7b",
         model_provider: str = "Ollama",
         selected_analysts: list[str] = [],
         question: str = test_question,
