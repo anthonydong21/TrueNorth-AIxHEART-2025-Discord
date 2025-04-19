@@ -22,7 +22,7 @@ HerVoice is an AI-powered support assistant designed to empower women in STEM (S
 | LLM          | Google Gemini (via `langchain_google_genai`) |
 | Vector Store | PostgreSQL + pgvector                    |
 | Embeddings   | GoogleGenerativeAIEmbeddings             |
-| Frontend     | Streamlit                                |
+| Frontend     | Streamlit and FastAPI                    |
 | Web Search   | Tavily API                               |
 | Orchestration| LangGraph                                |
 
@@ -43,7 +43,7 @@ Now you can update your virtual environment that Poetry made:
 source .venv/bin/activate
 ```
 
-## Gemini Setup
+## Environment Setup
 You need an `.env` file with these values set up:
 ```
 export GEMINI_API_KEY="something"
@@ -61,6 +61,9 @@ You also need the JSON file that is mentioned in `GOOGLE_APPLICATION_CREDENTIALS
 
 ```python Knowledge.py```
 
-# Launch the Chatbot
+# Launch Chatbot API
+```poetry run uvicorn HerVoice.src.app:app --reload`
+
+# Launch the Streamlit webpage
 
 ```streamlit run HerVoice.py```
