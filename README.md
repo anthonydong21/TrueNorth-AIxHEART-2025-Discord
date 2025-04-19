@@ -64,7 +64,7 @@ This will take 20+ minutes if you have several PDFs. After you have converted yo
 
 # Launch Chatbot API
 This sets up a server that the Streamlit application can send calls to.
-```poetry run uvicorn HerVoice.src.app:app --reload```
+```poetry run uvicorn hervoice.src.app:app --reload```
 
 # Launch the Streamlit webpage
 You need to have the above chatbot API launched in another terminal before running:
