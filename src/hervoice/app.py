@@ -44,10 +44,10 @@ def invoke_llm(question: str) -> Tuple[str, List[Any]]:
     logger.info("Invoking chatbot...")
     progress.start()
     try:
-        # model_name = "gemini-2.0-flash"
-        # model_provider = "Gemini"
-        model_name = "smollm:1.7b"
-        model_provider = "Ollama"
+        model_name = "gemini-2.0-flash"
+        model_provider = "Gemini"
+        # model_name = "smollm:1.7b"
+        # model_provider = "Ollama"
         selected_analysts = []
 
         workflow = build_rag_graph(selected_analysts)

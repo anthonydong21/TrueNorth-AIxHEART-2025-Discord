@@ -81,5 +81,6 @@ def chitter_chatter_agent(state: ChatState) -> ChatState:
     show_agent_reasoning(response, f"Chitter-chatter Response | " + state.metadata["model_name"])
 
     # Update and return state
-    state.generation = response
+    state.generation = response.content
+    state.messages.append(state)
     return state
