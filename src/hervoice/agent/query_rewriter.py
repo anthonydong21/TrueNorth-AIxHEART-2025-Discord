@@ -13,10 +13,11 @@ def rewrite_query(state: ChatState) -> str:
     Returns:
         str: current conversation state
     """
-    logger.info("[hallucination_checker] Starting check...")
-    if "not grounded" in (state.generation or ""):
-        state.hallucination_checker_attempts += 1
-        logger.info("[hallucination_checker] Result: fail")
-        return "retry_generation" if state.hallucination_checker_attempts < 2 else "hallucinated"
-    logger.info("[hallucination_checker] Result: pass")
-    return "check_relevance"
+    # logger.info("[hallucination_checker] Starting check...")
+    # if "not grounded" in (state.generation or ""):
+    #     state.hallucination_checker_attempts += 1
+    #     logger.info("[hallucination_checker] Result: fail")
+    #     return "retry_generation" if state.hallucination_checker_attempts < 2 else "hallucinated"
+    # logger.info("[hallucination_checker] Result: pass")
+    # return "check_relevance"
+    return state
