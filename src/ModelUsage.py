@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import time
 from typing import Any
 
+
 class ModelUsageTracker:
     def __init__(self, price_per_1m_tokens):
         """
@@ -53,19 +54,14 @@ class ModelUsageTracker:
         """
         Return a dictionary with tracked details.
         """
-        return {
-            "Prompt Tokens": self.prompt_tokens,
-            "Completion Tokens": self.completion_tokens,
-            "Total Tokens": self.total_tokens,
-            "Total Cost (USD)": round(self.total_cost, 6),
-            "Response Time (s)": round(self.response_time, 2)
-        }
+        return {"Prompt Tokens": self.prompt_tokens, "Completion Tokens": self.completion_tokens, "Total Tokens": self.total_tokens, "Total Cost (USD)": round(self.total_cost, 6), "Response Time (s)": round(self.response_time, 2)}
 
     def display_summary(self):
         """
         Display usage summary in plain text format.
         """
-        print(f"""
+        print(
+            f"""
 ------------------------------------------------------------
 Model Usage Summary
 ------------------------------------------------------------
@@ -74,7 +70,9 @@ Model Usage Summary
 - Total Tokens:       {self.total_tokens}
 - Total Cost: $       {self.total_cost:.6f}
 - Response Time:      {self.response_time:.2f} seconds
-""")
+"""
+        )
+
 
 # Define a context manager to automatically track API call usage
 @contextmanager
@@ -89,6 +87,6 @@ def usage_tracker(price_per_1m_tokens):
     tracker.start_time = time.time()  # Record start time before API call
     yield tracker  # Provide the tracker instance
     tracker.end_time = time.time()  # Record end time after API call
-    tracker.response_time = tracker.end_time - tracker.start_time # Compute response time
+    tracker.response_time = tracker.end_time - tracker.start_time  # Compute response time
     # Display usage summary
     tracker.display_summary()

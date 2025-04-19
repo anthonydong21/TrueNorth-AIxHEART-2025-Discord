@@ -2,3 +2,4 @@
 __pycache__
 books_pdf/*.pdf
 .DS_Store
+.logs
