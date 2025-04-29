@@ -1,4 +1,4 @@
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph, END, START
 from langgraph.graph.state import CompiledGraph
 from langchain_core.runnables.graph import MermaidDrawMethod
 
@@ -11,7 +11,7 @@ from .agent.evaluator import evaluate_answer_by_design
 from .agent.route_question import query_router_agent
 from .agent.answer_generator import answer_generator
 from .agent.reference_table import create_reference_table
-from .agent.answer_verifier import check_relevance
+from .agent.document_relevence_checker import check_relevance
 
 def save_graph_as_png(app: CompiledGraph, output_file_path) -> None:
     png_image = app.get_graph().draw_mermaid_png(draw_method=MermaidDrawMethod.API)
@@ -33,72 +33,49 @@ def build_rag_graph(selected_analysts):
     builder.add_node("evaluate_answer", evaluate_answer_by_design)
     builder.add_node("answer_generator", answer_generator)
     builder.add_node("relevance_grader", check_relevance)
+    builder.add_node("query_router", query_router_agent)
 
-    # === Entry point: Route query to appropriate agent ===
-    builder.set_conditional_entry_point(
-        query_router_agent,
-        {
+    # === Start node ===
+    builder.add_edge(START, "query_router")
+    # builder.set_entry_point("query_router")
+    # === Query Router decides routing ===
+    builder.add_conditional_edges(
+        "query_router",
+        lambda state: state.metadata.get("signal", "Chitter-Chatter"),
+        path_map={
             "Websearch": "web_searcher",
             "Vectorstore": "document_retriever",
             "Chitter-Chatter": "chitter_chatter",
         },
     )
-    builder.add_edge("document_retriever", "relevance_grader")
-    builder.add_edge("web_searcher", "answer_generator")
-    builder.add_edge("web_searcher", "answer_generator")
 
+    # === Document retrieval and grading ===
+    builder.add_edge("document_retriever", "relevance_grader")
     builder.add_conditional_edges(
         "relevance_grader",
-        check_relevance,
+        lambda state: state.metadata.get("relevance_score", "fail"),
         path_map={
-            "Websearch": "web_searcher",
-            "generate": "answer_generator",
+            "fail": "web_searcher",
+            "pass": "answer_generator",
         },
     )
-    builder.add_edge("query_rewriter", "document_retriever")
 
+    # === Web search path ===
+    builder.add_edge("web_searcher", "answer_generator")
+
+    # === Rerouting paths ===
+    builder.add_edge("query_rewriter", "document_retriever")
+    builder.add_edge("answer_generator", "evaluate_answer")
     builder.add_conditional_edges(
         "evaluate_answer",
-        evaluate_answer_by_design,
+        lambda state: state.metadata.get("evaluator_result", "fail"),
         path_map={
-            "useful": END,
-            "design-P1-failed": "query_rewriter",
-            "design-P2-failed": "query_rewriter",
-            "design-P3-failed": "query_rewriter",
-            "hallucination-checker-failed": "query_rewriter",
-            "max-retries": "chitter_chatter"
-        }
-
+            "fail": "query_rewriter",
+            "pass": END,
+        },
     )
 
+    # === End paths ===
     builder.add_edge("chitter_chatter", END)
+
     return builder
-
-    # builder.add_node("generate_answer", generate_answer)
-
-    # builder.add_node("check_hallucination", check_hallucination)
-
-    # builder.add_edge("generate_answer", "check_hallucination")
-    # builder.add_edge("retry_generation", "check_hallucination")
-    # builder.add_conditional_edges(
-    #     "check_hallucination",
-    #     path_map={
-    #         "check_relevance": check_relevance,
-    #         "retry_generation": generate_answer,
-    #         "hallucinated": chitter_chatter_agent,
-    #     }
-    # )
-
-    # builder.add_conditional_edges(
-    #     "check_relevance",
-    #     path_map={
-    #         "useful": END,
-    #         "not_useful": chitter_chatter_agent,
-    #     }
-    # )
-    # builder.add_edge("chitter_chatter", END)
-
-    # return builder.compile()
-
-
-# rag_graph = build_rag_graph()
