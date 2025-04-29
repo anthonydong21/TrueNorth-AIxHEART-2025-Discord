@@ -9,7 +9,6 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import textwrap
 from pprint import pprint
 from sqlalchemy.engine.url import make_url
-from IPython.display import Markdown
 from langchain_core.prompts import PromptTemplate
 from langchain_postgres import PGVector
 from sqlalchemy.engine.url import make_url
@@ -31,7 +30,6 @@ USE_BOOKS = "books_pdf"
 # Load environment variables from .env file
 load_dotenv()
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
 connection_string = os.getenv("DB_CONNECTION")
 
 # embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=openai_api_key)

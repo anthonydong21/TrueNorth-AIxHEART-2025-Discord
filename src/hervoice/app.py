@@ -40,7 +40,7 @@ class QueryOutput(BaseModel):
 
 
 # === Core Functionality ===
-def invoke_llm(question: str) -> Tuple[str, List[Any]]:
+async def invoke_llm(question: str) -> Tuple[str, List[Any]]:
     logger.info("Invoking chatbot...")
     progress.start()
     try:
@@ -54,7 +54,7 @@ def invoke_llm(question: str) -> Tuple[str, List[Any]]:
         agent = workflow.compile()
         save_graph_as_png(agent, os.path.join(log_dir, "graph.png"))
 
-        final_state = agent.invoke(
+        final_state = await agent.ainvoke(
             {
                 "question": question,
                 "messages": [HumanMessage(content=question)],
@@ -74,8 +74,8 @@ def invoke_llm(question: str) -> Tuple[str, List[Any]]:
 
 
 @app.post("/query", response_model=QueryOutput)
-def get_hervoice_response(input_data: QueryInput):
-    response, usage = invoke_llm(input_data.question)
+async def get_hervoice_response(input_data: QueryInput):
+    response, usage = await invoke_llm(input_data.question)
     return QueryOutput(response=response, usage=usage)
 
 

@@ -75,4 +75,5 @@ def query_router_agent(state: ChatState):
     show_agent_reasoning(route_question_response, state.metadata["model_name"])
     signal = route_question_response.signal
     logger.info(f"---ROUTING QUESTION TO {signal.upper()}---")
-    return signal
+    state.metadata['signal'] = signal
+    return state
