@@ -22,7 +22,7 @@ install:
 	poetry install
 
 embed:
-	$(PYTHON) Knowledge.py
+	$(PYTHON) src/Knowledge.py
 
 api:
 	poetry run uvicorn hervoice.app:app --reload
