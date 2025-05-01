@@ -70,6 +70,7 @@ def build_rag_graph(selected_analysts):
         "evaluate_answer",
         lambda state: state.metadata.get("evaluator_result", "fail"),
         path_map={
+            "max_retries": "chitter_chatter",
             "fail": "query_rewriter",
             "pass": END,
         },

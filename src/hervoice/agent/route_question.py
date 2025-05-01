@@ -1,8 +1,6 @@
 # Query Router Agent
 from langchain_core.prompts import PromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
-from pydantic import BaseModel
-from typing_extensions import Literal
 
 from hervoice.agent.state import ChatState, show_agent_reasoning
 from hervoice.utils.llm import call_llm
@@ -46,7 +44,8 @@ Analyze the user's question. Return a JSON object with one key `"signal"` and on
 """
 )
 
-
+from pydantic import BaseModel
+from typing_extensions import Literal
 class QueryRouterSignal(BaseModel):
     signal: Literal["Websearch", "Vectorstore", "Chitter-Chatter"]
 

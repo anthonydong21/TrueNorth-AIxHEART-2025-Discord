@@ -56,16 +56,50 @@ export GOOGLE_CLOUD_LOCATION=us-central1
 ...check out `.env.example` for a file you can copy.
 
 # Setup
-# You need to preprocess and embed PDFs into the vectorstore:
+### 📚 1. Preprocess & Embed PDFs
+
+Before running the chatbot, convert your PDFs into searchable vector embeddings:
 
 ```python Knowledge.py```
 
-This will take 20+ minutes if you have several PDFs. After you have converted your books to vectors and uploaded them to the PostreSQL database.
+⏳ This process may take 20+ minutes depending on the number and size of PDFs. Data is uploaded to the PostgreSQL vectorstore (pgvector).
 
-# Launch Chatbot API
-This sets up a server that the Streamlit application can send calls to.
-```poetry run uvicorn hervoice.app:app --reload```
 
-# Launch the Streamlit webpage
-You need to have the above chatbot API launched in another terminal before running:
+## 🧠 2. Launch Chatbot API (FastAPI)
+
+Start the backend server (runs on port 8000):
+
+poetry run uvicorn hervoice.app:app --reload
+
+### 🔗 API Access
+
+Once running, access the API docs and test endpoints at:
+
+```http://localhost:8000/docs```
+
+This Swagger UI lets you test HerVoice programmatically and inspect endpoint responses.
+
+## 🌸 3. Launch the Streamlit UI
+
+In a separate terminal, start the frontend (runs on port 8501):
+
 ```streamlit run HerVoice.py```
+
+Then go to your browser:
+
+`http://localhost:8501`
+
+This interface connects to the API and provides an interactive chatbot experience.
+
+# ✅ Makefile Usage
+
+If `make` is installed, you can simplify operations with:
+🔧 Local setup (no Docker)
+
+```
+make install        # Install dependencies using Poetry
+make embed          # Preprocess PDFs into vector DB
+make api            # Launch FastAPI backend (http://localhost:8000)
+make ui             # Launch Streamlit frontend (http://localhost:8501)
+make test           # "What is Langchain?" test question
+```

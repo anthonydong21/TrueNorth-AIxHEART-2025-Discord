@@ -124,7 +124,7 @@ def retrieve_documents(state: ChatState) -> ChatState:
     multi_query_generator = (
         multi_query_generation_prompt
         | llm
-        | (lambda x: [line.strip() for line in x.split("\n") if line.strip()])
+        | (lambda x: [line.strip() for line in str(x.content).split("\n") if line.strip()])
     )
     retrieval_chain_rag_fusion_mmr = (
         multi_query_generator

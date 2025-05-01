@@ -82,5 +82,5 @@ def chitter_chatter_agent(state: ChatState) -> ChatState:
 
     # Update and return state
     state.generation = response.content
-    state.messages.append(state)
+    state.messages.append(response)
     return state
