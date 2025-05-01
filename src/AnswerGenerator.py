@@ -1,7 +1,9 @@
 import requests
 from typing import Tuple, List, Any
 
-API_URL = "http://0.0.0.0:8000/query"
+# API_URL = "http://0.0.0.0:8000/query"
+API_URL = "http://localhost:8000/query"
+
 
 
 def generate_answer(prompt: str, chat_history: List[Any] = []) -> Tuple[str, Any]:
