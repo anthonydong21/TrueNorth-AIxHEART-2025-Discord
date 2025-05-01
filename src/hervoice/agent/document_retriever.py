@@ -117,7 +117,7 @@ def retrieve_documents(state: ChatState) -> ChatState:
     )
 
     logger.info(f"State Information: {state}")
-    llm = lambda prompt: call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=None, agent_name="document_retriever", verbose=True)
+    llm = lambda prompt: call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=None, agent_name="document_retriever", verbose=False)
 
     question = state.question
 

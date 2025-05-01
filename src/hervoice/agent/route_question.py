@@ -34,7 +34,7 @@ You are an expert at analyzing user question and deciding which data source is b
 ---
                                                             
 Scope Definition:
-Relevant questions are those related to **{system_relevant_scope}**
+Relevant questions are those related to **{system_relevant_scope}** and topics in **{vectorstore_content_summary}**
 
 ---                                                        
 
@@ -46,6 +46,8 @@ Analyze the user's question. Return a JSON object with one key `"signal"` and on
 
 from pydantic import BaseModel
 from typing_extensions import Literal
+
+
 class QueryRouterSignal(BaseModel):
     signal: Literal["Websearch", "Vectorstore", "Chitter-Chatter"]
 
@@ -70,9 +72,10 @@ def query_router_agent(state: ChatState):
         return QueryRouterSignal(signal="Chitter-Chatter", confidence=0.0, reasoning="Error in generating analysis; defaulting to Chitter-Chatter.")
 
     prompt = [SystemMessage(query_router_prompt), question]
-    route_question_response = call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=QueryRouterSignal, agent_name="query_router", default_factory=create_default_query_router_signal, max_retries=1)
-    show_agent_reasoning(route_question_response, state.metadata["model_name"])
-    signal = route_question_response.signal
+    response = call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=QueryRouterSignal, agent_name="query_router", default_factory=create_default_query_router_signal, max_retries=1, verbose=False)
+    show_agent_reasoning(response, f"Route Question Response | " + state.metadata["model_name"])
+
+    signal = response.signal
     logger.info(f"---ROUTING QUESTION TO {signal.upper()}---")
-    state.metadata['signal'] = signal
+    state.metadata["signal"] = signal
     return state

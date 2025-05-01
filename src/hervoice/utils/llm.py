@@ -153,8 +153,8 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
     model_info = get_model_info(model_name)
     llm = get_model(model_name, model_provider)
 
-    if verbose:
-        logger.info(f"Using LLM: {llm}")
+    # if verbose:
+    #     logger.info(f"Using LLM: {llm}")
 
     if pydantic_model and (not model_info or model_info.has_json_mode()):
         llm = llm.with_structured_output(pydantic_model, method="json_mode")
