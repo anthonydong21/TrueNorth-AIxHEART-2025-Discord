@@ -3,6 +3,7 @@ from datetime import datetime
 from langchain_core.prompts import PromptTemplate
 from langchain_core.documents import Document
 from hervoice.utils.llm import call_llm
+from hervoice.agent.state import show_agent_reasoning
 from hervoice.utils.logging import get_caller_logger
 from hervoice.utils.metaprompt import goals_as_str, system_relevant_scope
 
@@ -38,7 +39,7 @@ Use the following background information to help answer the question:
 2. If the answer is **not present** in the knowledge, say so explicitly.
 3. Keep the answer **concise**, **accurate**, and **focused** on the question.
 4. At the end, include a **reference section**:
-    - For book-based sources, use **APA-style citations** if possible.
+    - For book-based sources, use **APA-style citations** if possible and local URLs.
     - For web-based sources, include **page title and URL**.
 
 ---
@@ -92,15 +93,12 @@ def answer_generator(state):
     documents = [Document(metadata=doc["metadata"], page_content=doc["page_content"]) if isinstance(doc, dict) else doc for doc in documents]
 
     # Format the prompt for the answer generator
-    prompt = answer_generator_prompt_template.format(
-        current_datetime=current_datetime,
-        context=documents,
-        question=question,
-        goals_as_str=goals_as_str
-    )
+    prompt = answer_generator_prompt_template.format(current_datetime=current_datetime, context=documents, question=question, goals_as_str=goals_as_str)
 
     logger.info(f"Answer generator prompt: {prompt}")
     response = call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=None, agent_name="chitter_chatter_agent")
+
+    show_agent_reasoning(response, f"Answer Generator Response | " + state.metadata["model_name"])
 
     state.messages.append(response)
     state.generation = str(response.content)
