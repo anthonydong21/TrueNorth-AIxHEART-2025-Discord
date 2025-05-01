@@ -69,7 +69,7 @@ Before running the chatbot, convert your PDFs into searchable vector embeddings:
 
 Start the backend server (runs on port 8000):
 
-poetry run uvicorn hervoice.app:app --reload
+`poetry run uvicorn hervoice.app:app --reload`
 
 ### 🔗 API Access
 
