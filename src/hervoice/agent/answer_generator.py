@@ -103,13 +103,13 @@ def answer_generator(state):
     response = call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=None, agent_name="chitter_chatter_agent")
 
     state.messages.append(response)
-    state.generation = response
+    state.generation = str(response.content)
     # reference_table = state.metadata["Reference Table"]
     # if reference_table:
     #     state.generation = [state.generation, '**References:**', state.metadata["Reference Table"]]
 
     logger.info(f"Current state: {state}")
-    logger.info(f"Response: {response}")
+    logger.info(f"Response: {state.generation}")
     return state
 
     # End time

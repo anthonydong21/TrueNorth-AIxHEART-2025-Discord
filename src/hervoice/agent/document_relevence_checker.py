@@ -3,13 +3,13 @@ from langchain_core.prompts import PromptTemplate
 from .state import ChatState
 from hervoice.utils.logging import get_caller_logger
 from hervoice.utils.llm import call_llm
-from pydantic import RootModel
+from pydantic import BaseModel, StrictBool
 
 logger = get_caller_logger()
 
 
-class RelevanceGrade(RootModel[bool]):
-    pass
+class RelevanceGrade(BaseModel):
+    value: StrictBool
 
 
 # Single document prompt

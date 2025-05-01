@@ -1,9 +1,10 @@
-from langchain_core.tools import tool
+# from langchain_core.tools import tool
 from .state import ChatState
 from hervoice.utils.logging import get_caller_logger
 
 logger = get_caller_logger()
-@tool
+
+
 def rewrite_query(state: ChatState) -> str:
     """Query Rewriter
 
@@ -14,5 +15,5 @@ def rewrite_query(state: ChatState) -> str:
         str: current conversation state
     """
     logger.info("Starting rewrite query agent...")
-    
+
     return state

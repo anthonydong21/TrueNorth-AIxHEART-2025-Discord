@@ -20,6 +20,9 @@ class ChatState(BaseModel):
     documents: List[Any] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
+    max_retries : int = 2
+    current_try : int = 0
+
     def merged_data(self, other: "ChatState") -> Dict[str, Any]:
         return merge_dicts(self.data, other.data)
 
@@ -68,12 +71,12 @@ def show_agent_reasoning(output, agent_name):
     if isinstance(output, (dict, list)):
         # Convert the output to JSON-serializable format
         serializable_output = convert_to_serializable(output)
-        print(json.dumps(serializable_output, indent=2))
+        print(json.dumps(serializable_output, indent=4))
     else:
         try:
             # Parse the string as JSON and pretty print it
             parsed_output = json.loads(str(output))
-            print(json.dumps(parsed_output, indent=2))
+            print(json.dumps(parsed_output, indent=4))
         except json.JSONDecodeError:
             # Fallback to original string if not valid JSON
             print(output)
