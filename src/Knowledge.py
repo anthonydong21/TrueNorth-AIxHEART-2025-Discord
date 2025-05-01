@@ -1,62 +1,72 @@
 import os
-import json
-from dotenv import load_dotenv
 import logging
 from datetime import datetime
 from typing import List
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-import textwrap
-from pprint import pprint
-from sqlalchemy.engine.url import make_url
-from langchain_core.prompts import PromptTemplate
-from langchain_postgres import PGVector
-from sqlalchemy.engine.url import make_url
-from langchain_openai import OpenAIEmbeddings
-from langchain_openai import ChatOpenAI
-from langchain_core.output_parsers import StrOutputParser
-from langchain_community.document_loaders import JSONLoader
-from langchain_pymupdf4llm import PyMuPDF4LLMLoader
-from langchain_text_splitters import MarkdownHeaderTextSplitter
-from langchain_core.documents import Document
-from langchain.load import dumps, loads
+from dotenv import load_dotenv
 from tqdm import tqdm
 
+from langchain_core.documents import Document
+from langchain_text_splitters import MarkdownHeaderTextSplitter
+from langchain_community.document_loaders import UnstructuredEPubLoader
+from langchain_pymupdf4llm import PyMuPDF4LLMLoader
+from langchain_postgres.vectorstores import PGVector
+from langchain_openai import OpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from TextCleaner import clean_pdf_documents
 
-USE_BOOKS = "books_pdf"
+from TextCleaner import clean_pdf_documents
 
 # Load environment variables from .env file
 load_dotenv()
 
-connection_string = os.getenv("DB_CONNECTION")
-
-# embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=openai_api_key)
-embedding_model = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", google_api_key=os.getenv("GEMINI_API_KEY"))  # make sure it's in your .env
-
+# Configure logging
 current_script_dir = os.path.dirname(os.path.abspath(__file__))
-books_dir = os.path.join(current_script_dir, USE_BOOKS)
-book_docs: list[Document] = []
+log_filename = os.path.join(current_script_dir, f"cleaning_{datetime.now().strftime('%Y%m%d')}.log")
+logging.basicConfig(filename=log_filename, filemode="a", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# Setup logger
-log_filename = f"cleaning_{datetime.now().strftime('%Y%m%d')}.log"
-log_filename = os.path.join(current_script_dir, log_filename)
-logging.basicConfig(filename=log_filename, filemode="a", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")  # 'w' to overwrite, 'a' to append
+# Define the directory containing the books
+BOOKS_DIR = os.path.join(os.getenv("HOME"), "Books")
 
-# Define document collections to be stored in PostgreSQL
-collections = {
-    "Books": None,  # PDF documents converted to Markdown,
-}
+# Define supported file extensions
+SUPPORTED_EXTENSIONS = {".pdf", ".epub", ".txt"}
 
-# Chunk according to Markdown
+# Initialize the text splitter
 text_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=[("#", "Header 1"), ("##", "Header 2"), ("###", "Header 3"), ("####", "Header 4"), ("#####", "Header 5")], strip_headers=False)
 
+# Initialize the embedding model
+# Uncomment the desired embedding model
 
-# Convert PDFS to Markdown
-def load_and_clean_book(filepath: str) -> list[Document]:
+# OpenAI Embeddings
+# embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=os.getenv("OPENAI_API_KEY"))
+
+# Google Generative AI Embeddings
+embedding_model = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", google_api_key=os.getenv("GEMINI_API_KEY"))
+
+# PostgreSQL connection string
+connection_string = os.getenv("DB_CONNECTION")
+
+
+def load_and_clean_file(filepath: str) -> List[Document]:
+    """
+    Loads and cleans a single file, returning a list of Document objects.
+    """
+    ext = os.path.splitext(filepath)[1].lower()
     try:
-        docs = PyMuPDF4LLMLoader(file_path=filepath, mode="single").load()
+        if ext == ".pdf":
+            loader = PyMuPDF4LLMLoader(file_path=filepath, mode="single")
+            docs = loader.load()
+        elif ext == ".epub":
+            loader = UnstructuredEPubLoader(filepath, mode="elements")
+            docs = loader.load()
+        elif ext == ".txt":
+            with open(filepath, "r", encoding="utf-8") as f:
+                content = f.read()
+            docs = [Document(page_content=content, metadata={"source": filepath})]
+        else:
+            logging.info(f"Skipped unsupported file: {filepath}")
+            return []
+
         cleaned_docs, _ = clean_pdf_documents(docs, min_content_length=20, verbose=False)
         return cleaned_docs
     except Exception as e:
@@ -64,87 +74,60 @@ def load_and_clean_book(filepath: str) -> list[Document]:
         return []
 
 
-def convert_books() -> list[Document]:
-    book_files = [os.path.join(books_dir, f) for f in os.listdir(books_dir) if os.path.splitext(f)[1].lower() in {".pdf", ".txt"}]
+def process_and_upload_file(filepath: str):
+    """
+    Processes a single file: loads, cleans, chunks, and uploads to the vector store.
+    """
+    filename = os.path.basename(filepath)
+    collection_name = os.path.splitext(filename)[0]  # Use filename without extension as collection name
 
-    all_docs = []
-    with ProcessPoolExecutor() as executor:
-        futures = [executor.submit(load_and_clean_book, fp) for fp in book_files]
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing books"):
-            all_docs.extend(future.result())
-
-    print(f"Number of books: {len(all_docs)}")
+    docs = load_and_clean_file(filepath)
+    if not docs:
+        logging.warning(f"No documents returned from {filename}")
+        return
 
     chunks = []
-    for b in tqdm(all_docs, desc="Chunking books by markdown header"):
-        new_chunks = text_splitter.split_text(b.page_content)
-        for c in new_chunks:
-            c.metadata.update(b.metadata)
-        chunks.extend(new_chunks)
+    for doc in docs:
+        split_chunks = text_splitter.split_text(doc.page_content)
+        for chunk in split_chunks:
+            chunk.metadata.update(doc.metadata)
+            chunks.append(chunk)
 
-    logging.info("Finished processing books.")
-    print(f"Cleaning stats saved to {log_filename}")
-    return chunks
+    if not chunks:
+        logging.warning(f"No chunks generated from {filename}")
+        return
 
-
-# def convert_books() -> list[Document]:
-#     global book_docs
-#     for book in tqdm(os.listdir(books_dir), desc="chunking docs"):
-#         print(book)
-#         fp = os.path.join(books_dir, book)
-#         book_name, filetype = os.path.splitext(book)
-#         if filetype == '.pdf' or filetype == ".txt":
-#             docs = PyMuPDF4LLMLoader(file_path=os.path.join(books_dir, book), mode='single').load()
-#             book_docs.extend(docs)
-#             print(f"Number of documents: {len(docs)}")
-
-#     print(f"Number of books: {len(book_docs)}")
-
-#     # Clean PDFs
-#     book_docs, cleaning_stats = clean_pdf_documents(book_docs, min_content_length=20, verbose=False)
-
-#     # This takes 4 minutes
-#     chunks = []
-#     for b in tqdm(book_docs, desc="chunking books by markdown header"):
-#         new_chunks = text_splitter.split_text(b.page_content)
-#         for c in new_chunks:
-#             c.metadata.update(b.metadata)
-#         chunks.extend(new_chunks)
-
-#     # Log the cleaning stats
-#     logging.info("Cleaning statistics:")
-#     logging.info(cleaning_stats)
-
-#     print(f"Cleaning stats saved to {log_filename}")
-#     return chunks
-
-
-# Load documents into PostgreSQL vector database
-def load_documents(docs: List[Document]) -> PGVector:
-    global collections
-    databases = {}
-    print(f"Number of docs attempted to be loaded: {len(docs)}")
-    for name, docs in collections.items():
-        pg_vector_args = dict(embedding=embedding_model, documents=docs, collection_name=name, connection=connection_string, use_jsonb=True)  # OpenAI embeddings for vectorization  # The documents to be stored  # The name of the collection in PostgreSQL  # Connection string to the PostgreSQL database  # Store metadata as JSONB for efficient querying
-        print(pg_vector_args)
-
-        book_data_vector_store = PGVector.from_documents(**pg_vector_args)
-        databases[name] = book_data_vector_store
-    # Extract the database name from the connection string
-    database_name = make_url(connection_string).database
-
-    # Display confirmation message
-    print(f" Successfully loaded {len(docs)} chunks into '{name}' collection in '{database_name}'.")
-    return book_data_vector_store
+    try:
+        vector_store = PGVector.from_documents(embedding=embedding_model, documents=chunks, collection_name=collection_name, connection=connection_string, use_jsonb=True)
+        logging.info(f"Successfully uploaded {len(chunks)} chunks from {filename} to collection '{collection_name}'")
+    except Exception as e:
+        logging.error(f"Failed to upload chunks from {filename}: {e}")
 
 
 def main():
-    global collections
-    chunks = convert_books()
-    collections["Books"] = chunks
+    """
+    Main function to process and upload all supported files in the BOOKS_DIR.
+    """
+    if not os.path.isdir(BOOKS_DIR):
+        logging.error(f"Books directory does not exist: {BOOKS_DIR}")
+        return
 
-    print(f"Number of chunks: {len(chunks)}")
-    vector_db = load_documents(collections["Books"])
+    book_files = [os.path.join(BOOKS_DIR, f) for f in os.listdir(BOOKS_DIR) if os.path.splitext(f)[1].lower() in SUPPORTED_EXTENSIONS]
+
+    if not book_files:
+        logging.info("No supported book files found to process.")
+        return
+
+    with ProcessPoolExecutor() as executor:
+        futures = {executor.submit(process_and_upload_file, filepath): filepath for filepath in book_files}
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing books"):
+            filepath = futures[future]
+            try:
+                future.result()
+            except Exception as e:
+                logging.error(f"Error processing file {filepath}: {e}")
+
+    print(f"Processing complete. Logs saved to {log_filename}")
 
 
 if __name__ == "__main__":
