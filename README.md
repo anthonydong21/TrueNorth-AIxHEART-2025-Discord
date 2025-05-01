@@ -56,7 +56,7 @@ export GOOGLE_CLOUD_LOCATION=us-central1
 ...check out `.env.example` for a file you can copy.
 
 # Setup
-### 📚 1. Preprocess & Embed PDFs
+## 📚 1. Preprocess & Embed  PDFs
 
 Before running the chatbot, convert your PDFs into searchable vector embeddings:
 
@@ -65,13 +65,13 @@ Before running the chatbot, convert your PDFs into searchable vector embeddings:
 ⏳ This process may take 20+ minutes depending on the number and size of PDFs. Data is uploaded to the PostgreSQL vectorstore (pgvector).
 
 
-## 🧠 2. Launch Chatbot API (FastAPI)
+## 📡 2. Launch Chatbot API (FastAPI)
 
 Start the backend server (runs on port 8000):
 
 `poetry run uvicorn hervoice.app:app --reload`
 
-### 🔗 API Access
+### 🔗 API Docs
 
 Once running, access the API docs and test endpoints at:
 
