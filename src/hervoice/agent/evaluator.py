@@ -1,23 +1,37 @@
-from langchain_core.tools import tool
 from .state import ChatState
 from hervoice.utils.logging import get_caller_logger
 
+logger = get_caller_logger()
 
-def evaluate_answer_by_design(state: ChatState) -> str:
-    """Evaluate answer by design principles.
+def evaluate_answer(state: ChatState) -> str:
+    """Evaluates the generated answer based on retry count and hallucination-related reasons."""
+    
+    logger.info("[evaluator] Evaluating answer...")
 
-    Args:
-        state (ChatState): current conversation state
-
-    Returns:
-        str: current conversation state
-    """
-    # Flag max retries
+    # Increment attempt count
     state.current_try += 1
-    if state.current_try >= state.max_retries:
-        state.metadata['evaluator_result'] = "max_retries"
+    logger.info(f"[evaluator] Attempt {state.current_try}/{state.max_retries}")
+
+    # Check for specific hallucination reasons
+    evaluator_reason = state.metadata.get("evaluator_reason")
+
+    if evaluator_reason == "hallucination":
+        logger.warning("[evaluator] Marked as hallucinated.")
+        state.metadata["evaluator_result"] = "hallucinated"
         return state
-    
-    state.metadata['evaluator_result'] = "pass"
-    
+
+    if evaluator_reason == "invalid_links":
+        logger.warning("[evaluator] Broken links detected.")
+        state.metadata["evaluator_result"] = "broken_links"
+        return state
+
+    # Check retry count
+    if state.current_try >= state.max_retries:
+        logger.warning("[evaluator] Max retries reached.")
+        state.metadata["evaluator_result"] = "max_retries"
+        return state
+
+    # All clear
+    state.metadata["evaluator_result"] = "pass"
+    logger.info("[evaluator] Evaluation passed.")
     return state

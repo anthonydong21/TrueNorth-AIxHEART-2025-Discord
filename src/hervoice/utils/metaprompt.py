@@ -7,6 +7,6 @@ DP3 = "facilitate empowering and streamlined interactions with the conversationa
 
 goals_as_str = "\n".join([f"{i}. {goal}" for i, goal in enumerate([DP1, DP2, DP3])])
 
-vectorstore_content_summary = "langchain documentation, communcation strategies rooted in conflict resolution and diplomacy, positive psychology, dialectical behavioral therapy, leadership skills, coping mechanisms"
+vectorstore_content_summary = "communcation strategies rooted in conflict resolution and diplomacy, positive psychology, dialectical behavioral therapy, leadership skills, coping mechanisms"
 
 system_relevant_scope = "optimizing comfort in lived environment, maintaining positive trajectory towards maximizing STEM career"

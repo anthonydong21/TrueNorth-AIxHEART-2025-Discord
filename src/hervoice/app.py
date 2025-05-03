@@ -66,8 +66,8 @@ async def invoke_llm(question: str) -> Tuple[str, List[Any]]:
         agent = workflow.compile()
         save_graph_as_png(agent, os.path.join(log_dir, "graph.png"))
 
-        final_state = await agent.ainvoke(
-            {
+        try:
+            final_state = await agent.ainvoke({
                 "question": question,
                 "messages": [HumanMessage(content=question)],
                 "data": [],
@@ -75,9 +75,24 @@ async def invoke_llm(question: str) -> Tuple[str, List[Any]]:
                     "show_reasoning": True,
                     "model_name": model_name,
                     "model_provider": model_provider,
-                },
-            }
-        )
+                }
+            })
+        except Exception as e:
+            logger.exception("🔥 LangGraph execution failed")
+            raise e
+
+        # final_state = await agent.ainvoke(
+        #     {
+        #         "question": question,
+        #         "messages": [HumanMessage(content=question)],
+        #         "data": [],
+        #         "metadata": {
+        #             "show_reasoning": True,
+        #             "model_name": model_name,
+        #             "model_provider": model_provider,
+        #         }
+        #     }
+        # )
 
         response = final_state.get("generation") or str(final_state)
         return response, final_state
