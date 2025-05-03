@@ -41,6 +41,7 @@ Use the following background information to help answer the question:
 4. At the end, include a **reference section**:
     - For book-based sources, use **APA-style citations** if possible and local URLs.
     - For web-based sources, include **page title and URL**.
+5. Only answer questions relevant to STEM, workplace support, or academic guidance. For all other queries, politely decline.
 
 ---
 **Important**:

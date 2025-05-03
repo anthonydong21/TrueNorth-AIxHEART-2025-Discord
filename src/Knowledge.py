@@ -26,7 +26,8 @@ log_filename = os.path.join(current_script_dir, f"cleaning_{datetime.now().strft
 logging.basicConfig(filename=log_filename, filemode="a", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Define the directory containing the books
-BOOKS_DIR = os.path.join(os.getenv("HOME"), "Books")
+BOOKS_DIR = os.path.join(os.path.dirname(__file__), "books_pdf")
+
 
 # Define supported file extensions
 SUPPORTED_EXTENSIONS = {".pdf", ".epub", ".txt"}
