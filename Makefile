@@ -1,22 +1,19 @@
 # Makefile for HerVoice Project
 
-# Environment variables
-ENV_FILE := .env
+# Environment
 PYTHON := poetry run python
-ACTIVATE := source .venv/bin/activate
 
-# Docker Compose
-DOCKER_COMPOSE := docker compose
+.PHONY: help install embed api ui test dev venv
 
-.PHONY: help
 help:
 	@echo "HerVoice Makefile Commands:"
-	@echo "  make install         - Install Poetry dependencies"
-	@echo "  make venv            - Activate virtual environment"
-	@echo "  make embed           - Preprocess and embed PDFs into vector DB"
-	@echo "  make api             - Run FastAPI server locally"
-	@echo "  make ui              - Run Streamlit frontend locally"
-	@echo "  make dev             - Run both API and UI locally (2 terminals required)"
+	@echo "  install  - Install dependencies"
+	@echo "  embed    - Preprocess and embed PDFs into vector DB"
+	@echo "  api      - Run FastAPI server locally"
+	@echo "  ui       - Run Streamlit frontend locally"
+	@echo "  test     - Run similarity evaluator and tests"
+	@echo "  dev      - Instructions for running API and UI concurrently"
+	@echo "  venv     - Instructions to activate virtual environment"
 
 install:
 	poetry install
@@ -34,9 +31,11 @@ test:
 	@echo "Running local test script..."
 	@chmod +x ./src/test_server.sh && ./src/test_server.sh
 
+tests:
+	@chmod +x ./src/test_examples.sh && ./src/test_examples.sh && $(PYTHON) src/similarity_evaluator.py
+
 venv:
-	@echo "To activate the Poetry virtual environment, run this manually:"
-	@echo "source .venv/bin/activate"
+	@echo "Activate virtual environment with: source .venv/bin/activate"
 
 dev:
-	@echo "Run make api and make ui in separate terminals"
+	@echo "Run 'make api' and 'make ui' in separate terminals."

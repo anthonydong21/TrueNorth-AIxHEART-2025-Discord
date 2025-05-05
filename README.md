@@ -91,6 +91,16 @@ Then go to your browser:
 
 This interface connects to the API and provides an interactive chatbot experience.
 
+## 📐 Similarity Evaluation Workflow
+
+Evaluate chatbot response quality as follows:
+
+1. Run chatbot tests (results saved to `answers_generated.json`):
+
+```bash
+make test
+
+
 # ✅ Makefile Usage
 
 If `make` is installed, you can simplify operations with:
@@ -101,5 +111,5 @@ make install        # Install dependencies using Poetry
 make embed          # Preprocess PDFs into vector DB
 make api            # Launch FastAPI backend (http://localhost:8000)
 make ui             # Launch Streamlit frontend (http://localhost:8501)
-make test           # "What is Langchain?" test question
+make test           # Run chatbot API tests using predefined test cases and similarity matric
 ```

@@ -1,7 +1,8 @@
 import os
 import json
 from enum import Enum
-from typing import Tuple, List, Dict, Any, Optional, TypeVar, Type
+import re
+from typing import Tuple, List, Dict, Any, Optional, TypeVar, Type, Union
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -24,6 +25,7 @@ load_dotenv()
 # Model Enums and Config
 # ----------------------------------------
 
+
 class ModelProvider(str, Enum):
     ANTHROPIC = "Anthropic"
     DEEPSEEK = "DeepSeek"
@@ -31,6 +33,7 @@ class ModelProvider(str, Enum):
     GROQ = "Groq"
     OPENAI = "OpenAI"
     OLLAMA = "Ollama"
+
 
 class LLMModel(BaseModel):
     display_name: str
@@ -55,6 +58,7 @@ class LLMModel(BaseModel):
 
     def is_ollama(self) -> bool:
         return self.provider == ModelProvider.OLLAMA
+
 
 AVAILABLE_MODELS = [
     LLMModel(display_name="[anthropic] claude-3.5-haiku", model_name="claude-3-5-haiku-latest", provider=ModelProvider.ANTHROPIC),
@@ -88,8 +92,10 @@ OLLAMA_MODELS = [
 LLM_ORDER = [model.to_choice_tuple() for model in AVAILABLE_MODELS]
 OLLAMA_LLM_ORDER = [model.to_choice_tuple() for model in OLLAMA_MODELS]
 
+
 def get_model_info(model_name: str) -> Optional[LLMModel]:
     return next((m for m in AVAILABLE_MODELS + OLLAMA_MODELS if m.model_name == model_name), None)
+
 
 def get_model(model_name: str, model_provider: ModelProvider):
     if model_provider == ModelProvider.GROQ:
@@ -105,14 +111,17 @@ def get_model(model_name: str, model_provider: ModelProvider):
     elif model_provider == ModelProvider.OLLAMA:
         return ChatOllama(model=model_name, base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
 
+
 # ----------------------------------------
 # LLM Call Handling
 # ----------------------------------------
 
 T = TypeVar("T", bound=BaseModel)
 
+
 def is_root_model(model_class: Type[BaseModel]) -> bool:
-    return list(model_class.model_fields.keys()) == ['root']
+    return list(model_class.model_fields.keys()) == ["root"]
+
 
 def instantiate_model(model_class: Type[T], data: Any) -> T:
     if is_root_model(model_class):
@@ -123,19 +132,30 @@ def instantiate_model(model_class: Type[T], data: Any) -> T:
         field = list(model_class.model_fields.keys())[0]
         return model_class(**{field: data})
 
-def extract_json_from_response(content: str) -> Optional[dict]:
-    try:
-        json_start = content.find("```json")
-        if json_start != -1:
-            json_content = content[json_start + 7:]
-            json_end = json_content.find("```")
-            if json_end != -1:
-                json_content = json_content[:json_end].strip()
-            return json.loads(json_content)
-        return json.loads(content)
-    except Exception as e:
-        logger.error(f"Failed to parse JSON from LLM response: {e}")
-        return None
+
+def extract_json_from_response(text: Union[str, bytes]) -> Optional[dict]:
+    if isinstance(text, bytes):
+        text = text.decode("utf-8", errors="ignore")
+
+    # Try to extract anything that looks like a JSON object
+    json_candidates = re.findall(r"(\{.*?\})", text, re.DOTALL)
+
+    for candidate in json_candidates:
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+
+    # Handle markdown-wrapped JSON: ```json\n{...}\n```
+    md_block = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    if md_block:
+        try:
+            return json.loads(md_block.group(1))
+        except json.JSONDecodeError:
+            pass
+
+    return None
+
 
 def create_default_response(model_class: Optional[Type[T]]) -> Optional[T]:
     if model_class is None:
@@ -143,11 +163,9 @@ def create_default_response(model_class: Optional[Type[T]]) -> Optional[T]:
     try:
         return instantiate_model(model_class, False)
     except Exception:
-        default_fields = {
-            k: ("Error" if v.annotation == str else 0 if v.annotation in (int, float) else {} if v.annotation == dict else None)
-            for k, v in model_class.model_fields.items()
-        }
+        default_fields = {k: ("Error" if v.annotation == str else 0 if v.annotation in (int, float) else {} if v.annotation == dict else None) for k, v in model_class.model_fields.items()}
         return model_class(**default_fields)
+
 
 def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: Type[T], agent_name: Optional[str] = None, max_retries: int = 3, default_factory=None, verbose=False) -> T:
     model_info = get_model_info(model_name)
@@ -190,9 +208,11 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
                 return default_factory() if default_factory else create_default_response(pydantic_model)
     return create_default_response(pydantic_model)
 
+
 # ----------------------------------------
 # Embeddings
 # ----------------------------------------
+
 
 def get_embedding_model(model_name: str, model_provider: str) -> Optional[Any]:
     model_info = get_model_info(model_name)

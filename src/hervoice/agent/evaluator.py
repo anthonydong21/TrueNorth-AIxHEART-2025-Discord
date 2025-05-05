@@ -3,9 +3,10 @@ from hervoice.utils.logging import get_caller_logger
 
 logger = get_caller_logger()
 
+
 def evaluate_answer(state: ChatState) -> str:
     """Evaluates the generated answer based on retry count and hallucination-related reasons."""
-    
+
     logger.info("[evaluator] Evaluating answer...")
 
     # Increment attempt count
@@ -14,6 +15,12 @@ def evaluate_answer(state: ChatState) -> str:
 
     # Check for specific hallucination reasons
     evaluator_reason = state.metadata.get("evaluator_reason")
+
+    # Check retry count
+    if state.current_try >= state.max_retries:
+        logger.warning("[evaluator] Max retries reached.")
+        state.metadata["evaluator_result"] = "max_retries"
+        return state
 
     if evaluator_reason == "hallucination":
         logger.warning("[evaluator] Marked as hallucinated.")
@@ -25,13 +32,8 @@ def evaluate_answer(state: ChatState) -> str:
         state.metadata["evaluator_result"] = "broken_links"
         return state
 
-    # Check retry count
-    if state.current_try >= state.max_retries:
-        logger.warning("[evaluator] Max retries reached.")
-        state.metadata["evaluator_result"] = "max_retries"
-        return state
-
     # All clear
     state.metadata["evaluator_result"] = "pass"
+    state.generation = state.messages[-1].content
     logger.info("[evaluator] Evaluation passed.")
     return state
