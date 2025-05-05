@@ -35,12 +35,13 @@ You are a relevance grader evaluating whether a retrieved document is helpful in
 )
 
 
-async def check_relevance(state: ChatState) -> dict:
+async def check_relevance(state: ChatState) -> ChatState:
     logger.info("---CHECK DOCUMENT RELEVANCE (ONLY RAW TRUE/FALSE GRADING)---")
 
     if not state.documents:
         logger.info("---NO DOCUMENTS AVAILABLE, WEB SEARCH TRIGGERED---")
-        return {"checker_result": "fail"}
+        state.metadata["relevance_score"] = "fail"
+        return state
 
     question = state.question
     documents = state.documents
@@ -66,14 +67,13 @@ async def check_relevance(state: ChatState) -> dict:
 
     # Pretty logging
     logger.info("--- Document Grading Results ---")
+    filtered_documents = []
     for idx, (doc, result) in enumerate(zip(documents, grading_results), start=1):
-        mark = "✔️" if result else "❌"
+        mark = "✔️" if result.content else "❌"
         snippet = doc.page_content.strip().replace("\n", " ")[:100]
-        logger.info(f'{mark} Document {idx}: {str(result).upper()} - "{snippet}..."')
-
-    filtered_documents = [
-        doc for doc, result in zip(documents, grading_results) if result
-    ]
+        logger.info(f'{mark} Document {idx}: {result.content} - "{snippet}..."')
+        if result.content:
+            filtered_documents.append(doc)
 
     # Determine checker result
     total_docs = len(documents)
@@ -83,6 +83,7 @@ async def check_relevance(state: ChatState) -> dict:
 
     logger.info(f"Filtered out {filtered_out_pct:.1%}: {checker_result.upper()}")
 
+    # Update the state appropriately
     state.documents = filtered_documents
-    state.metadata["relevance_score"] = "pass" if filtered_out_pct < 0.5 else "fail"
+    state.metadata["relevance_score"] = checker_result
     return state

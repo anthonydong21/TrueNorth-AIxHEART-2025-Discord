@@ -37,6 +37,7 @@ uvicorn = "^0.34.1"
 langchain-postgres = "^0.0.14"
 psycopg = {extras = ["binary", "pool"], version = "^3.2.6"}
 unstructured = "^0.17.2"
+seaborn = "^0.13.2"
 
 [tool.poetry]
 packages = [
