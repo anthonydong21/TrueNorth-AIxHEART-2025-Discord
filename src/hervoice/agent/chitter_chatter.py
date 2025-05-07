@@ -69,7 +69,7 @@ def chitter_chatter_agent(state: ChatState) -> ChatState:
 
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    last_user_message = state.messages[-1]
+    last_user_message = state.question
 
     prompt = [SystemMessage(chitterchatter_prompt_template.format(current_datetime=current_datetime, goals_as_str=goals_as_str, system_relevant_scope=system_relevant_scope)), last_user_message]
 
@@ -81,6 +81,6 @@ def chitter_chatter_agent(state: ChatState) -> ChatState:
     show_agent_reasoning(response, f"Chitter-chatter Response | " + state.metadata["model_name"])
 
     # Update and return state
-    state.generation = response.content
+    state.generation = str(response.content)
     state.messages.append(response)
     return state
