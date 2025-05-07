@@ -73,9 +73,9 @@ def rewrite_query(state: ChatState) -> str:
     if original_question != 0:
         question = original_question
     else:
-        question = state["question"]
+        question = state.question
 
-    generation = state["generation"]
+    generation = state.generation
 
     # Create prompt and invoke the query rewriter
     query_rewriter_prompt = query_rewriter_prompt_template.format(question=question, generation=generation, vectorstore_content_summary=vectorstore_content_summary)
