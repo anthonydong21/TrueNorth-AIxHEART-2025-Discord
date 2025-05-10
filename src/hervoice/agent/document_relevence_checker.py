@@ -69,10 +69,10 @@ async def check_relevance(state: ChatState) -> ChatState:
     logger.info("--- Document Grading Results ---")
     filtered_documents = []
     for idx, (doc, result) in enumerate(zip(documents, grading_results), start=1):
-        mark = "✔️" if result.content else "❌"
+        mark = "✔️" if result.value else "❌"
         snippet = doc.page_content.strip().replace("\n", " ")[:100]
-        logger.info(f'{mark} Document {idx}: {result.content} - "{snippet}..."')
-        if result.content:
+        logger.info(f'{mark} Document {idx}: {result.value} - "{snippet}..."')
+        if result.value:
             filtered_documents.append(doc)
 
     # Determine checker result

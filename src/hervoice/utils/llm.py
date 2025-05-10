@@ -14,6 +14,8 @@ from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_core.utils.function_calling import convert_to_openai_function
+
 
 from hervoice.utils.logging import get_caller_logger
 from hervoice.utils.progress import progress
@@ -137,22 +139,39 @@ def extract_json_from_response(text: Union[str, bytes]) -> Optional[dict]:
     if isinstance(text, bytes):
         text = text.decode("utf-8", errors="ignore")
 
-    # Try to extract anything that looks like a JSON object
-    json_candidates = re.findall(r"(\{.*?\})", text, re.DOTALL)
+    md_block = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    if md_block:
+        raw_block = md_block.group(1)
 
+        def fix_quotes(json_str: str) -> str:
+            def escape_problem_quotes(match):
+                key = match.group(1)
+                value = match.group(2)
+                # Escape inner double quotes but keep the outer ones intact
+                value_escaped = re.sub(r'(?<!\\)"', r'\\"', value)
+                return f'"{key}": "{value_escaped}"'
+
+            # Only apply to fields like "explanation": "some string"
+            return re.sub(r'"(\w+)":\s*"((?:[^"\\]|\\.)*?)"', escape_problem_quotes, json_str, flags=re.DOTALL)
+
+        safe_block = fix_quotes(raw_block)
+        try:
+            return json.loads(safe_block)
+        except json.JSONDecodeError as e:
+            logger.warning(f"[extract_json_from_response] Failed to parse markdown JSON after sanitization: {e}")
+            logger.warning(f"Offending block:\n{safe_block}")
+
+    json_candidates = re.findall(r"(\{.*?\})", text, re.DOTALL)
     for candidate in json_candidates:
         try:
             return json.loads(candidate)
         except json.JSONDecodeError:
             continue
 
-    # Handle markdown-wrapped JSON: ```json\n{...}\n```
-    md_block = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if md_block:
-        try:
-            return json.loads(md_block.group(1))
-        except json.JSONDecodeError:
-            pass
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
 
     return None
 
@@ -171,11 +190,10 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
     model_info = get_model_info(model_name)
     llm = get_model(model_name, model_provider)
 
-    # if verbose:
-    #     logger.info(f"Using LLM: {llm}")
-
-    if pydantic_model and (not model_info or model_info.has_json_mode()):
-        llm = llm.with_structured_output(pydantic_model, method="json_mode")
+    if pydantic_model:
+        if model_info and pydantic_model:
+            logger.info("Attempting structured output")
+            llm = llm.with_structured_output(pydantic_model)
 
     for attempt in range(1, max_retries + 1):
         try:
@@ -187,7 +205,14 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
                 logger.info(f"LLM Result: {result}")
 
             if pydantic_model:
-                if model_info and not model_info.has_json_mode():
+                if model_info and model_info.is_gemini():
+                    if isinstance(result, pydantic_model):
+                        return result
+                    parsed = extract_json_from_response(result.content)
+                    if not parsed:
+                        raise ValueError(f"[Gemini] Failed to extract JSON from:\n{result.content}")
+                    return instantiate_model(pydantic_model, parsed)
+                elif model_info and not model_info.has_json_mode():
                     parsed = extract_json_from_response(result.content)
                     if parsed:
                         return instantiate_model(pydantic_model, parsed)
@@ -206,12 +231,8 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
             if attempt == max_retries:
                 logger.error(f"Max retries reached after {max_retries} attempts.")
                 return default_factory() if default_factory else create_default_response(pydantic_model)
+
     return create_default_response(pydantic_model)
-
-
-# ----------------------------------------
-# Embeddings
-# ----------------------------------------
 
 
 def get_embedding_model(model_name: str, model_provider: str) -> Optional[Any]:
