@@ -1,0 +1,113 @@
+Theme,Metric,Mean,Variance
+Overall,Anthropomorphism,4.9,1.82
+Overall,Attractivity,4.95,3.41
+Overall,Identification,5.36,0.93
+Overall,Goal Facilitation,6.26,0.5
+Overall,Trustworthiness,6.25,0.19
+Overall,Usefulness,5.89,0.87
+Overall,Accessibility,6.64,0.43
+"Motivation & Burnout,",Anthropomorphism,3.0,
+"Motivation & Burnout,",Attractivity,6.0,
+"Motivation & Burnout,",Identification,6.0,
+"Motivation & Burnout,",Goal Facilitation,7.0,
+"Motivation & Burnout,",Trustworthiness,7.0,
+"Motivation & Burnout,",Usefulness,7.0,
+"Motivation & Burnout,",Accessibility,7.0,
+Confidence & Self-Efficacy,Anthropomorphism,5.33,1.33
+Confidence & Self-Efficacy,Attractivity,5.17,3.79
+Confidence & Self-Efficacy,Identification,5.83,0.15
+Confidence & Self-Efficacy,Goal Facilitation,6.58,0.27
+Confidence & Self-Efficacy,Trustworthiness,6.42,0.27
+Confidence & Self-Efficacy,Usefulness,6.08,0.08
+Confidence & Self-Efficacy,Accessibility,6.67,0.42
+Passion & Career Purpose,Anthropomorphism,5.0,
+Passion & Career Purpose,Attractivity,7.0,
+Passion & Career Purpose,Identification,6.0,
+Passion & Career Purpose,Goal Facilitation,6.0,
+Passion & Career Purpose,Trustworthiness,6.0,
+Passion & Career Purpose,Usefulness,6.0,
+Passion & Career Purpose,Accessibility,6.0,
+Family Expectations,Anthropomorphism,5.5,0.5
+Family Expectations,Attractivity,1.0,0.0
+Family Expectations,Identification,5.5,0.5
+Family Expectations,Goal Facilitation,7.0,0.0
+Family Expectations,Trustworthiness,6.5,0.5
+Family Expectations,Usefulness,6.0,0.0
+Family Expectations,Accessibility,7.0,0.0
+Male Allyship,Anthropomorphism,5.0,2.0
+Male Allyship,Attractivity,4.75,6.25
+Male Allyship,Identification,5.5,0.33
+Male Allyship,Goal Facilitation,6.25,0.25
+Male Allyship,Trustworthiness,6.0,0.0
+Male Allyship,Usefulness,5.75,0.25
+Male Allyship,Accessibility,6.5,0.33
+HR & Reporting Challenges,Anthropomorphism,2.0,
+HR & Reporting Challenges,Attractivity,6.0,
+HR & Reporting Challenges,Identification,3.0,
+HR & Reporting Challenges,Goal Facilitation,5.0,
+HR & Reporting Challenges,Trustworthiness,6.0,
+HR & Reporting Challenges,Usefulness,5.0,
+HR & Reporting Challenges,Accessibility,7.0,
+Impression Management,Anthropomorphism,5.33,0.27
+Impression Management,Attractivity,5.17,4.17
+Impression Management,Identification,5.5,0.3
+Impression Management,Goal Facilitation,6.17,0.17
+Impression Management,Trustworthiness,6.17,0.17
+Impression Management,Usefulness,6.17,0.17
+Impression Management,Accessibility,6.67,0.67
+Work-Life Balance,Anthropomorphism,5.33,1.47
+Work-Life Balance,Attractivity,5.5,1.5
+Work-Life Balance,Identification,5.33,0.67
+Work-Life Balance,Goal Facilitation,6.33,0.27
+Work-Life Balance,Trustworthiness,6.0,0.0
+Work-Life Balance,Usefulness,6.33,0.27
+Work-Life Balance,Accessibility,6.67,0.27
+Mentorship Gaps,Anthropomorphism,4.0,2.0
+Mentorship Gaps,Attractivity,5.5,1.0
+Mentorship Gaps,Identification,5.0,2.0
+Mentorship Gaps,Goal Facilitation,6.25,0.25
+Mentorship Gaps,Trustworthiness,6.25,0.25
+Mentorship Gaps,Usefulness,5.75,0.25
+Mentorship Gaps,Accessibility,5.25,0.92
+Proactive Leadership,Anthropomorphism,3.25,1.58
+Proactive Leadership,Attractivity,4.75,6.25
+Proactive Leadership,Identification,4.5,3.0
+Proactive Leadership,Goal Facilitation,6.0,4.0
+Proactive Leadership,Trustworthiness,6.0,0.0
+Proactive Leadership,Usefulness,5.25,4.92
+Proactive Leadership,Accessibility,6.75,0.25
+General Support,Anthropomorphism,5.0,
+General Support,Attractivity,1.0,
+General Support,Identification,5.0,
+General Support,Goal Facilitation,6.0,
+General Support,Trustworthiness,6.0,
+General Support,Usefulness,6.0,
+General Support,Accessibility,6.0,
+Gendered Culture,Anthropomorphism,5.43,1.29
+Gendered Culture,Attractivity,5.71,0.57
+Gendered Culture,Identification,5.71,0.24
+Gendered Culture,Goal Facilitation,6.57,0.29
+Gendered Culture,Trustworthiness,6.43,0.29
+Gendered Culture,Usefulness,6.29,0.24
+Gendered Culture,Accessibility,6.86,0.14
+Stereotypes at Work,Anthropomorphism,4.86,2.81
+Stereotypes at Work,Attractivity,3.71,2.24
+Stereotypes at Work,Identification,5.0,2.33
+Stereotypes at Work,Goal Facilitation,5.86,0.14
+Stereotypes at Work,Trustworthiness,6.29,0.24
+Stereotypes at Work,Usefulness,5.43,1.29
+Stereotypes at Work,Accessibility,7.0,0.0
+Career Navigation,Anthropomorphism,5.67,0.33
+Career Navigation,Attractivity,5.33,1.33
+Career Navigation,Identification,4.67,0.33
+Career Navigation,Goal Facilitation,5.67,0.33
+Career Navigation,Trustworthiness,6.0,0.0
+Career Navigation,Usefulness,4.67,5.33
+Career Navigation,Accessibility,6.67,0.33
+Motivation & Burnout,Anthropomorphism,3.5,4.5
+Motivation & Burnout,Attractivity,6.0,0.0
+Motivation & Burnout,Identification,6.0,0.0
+Motivation & Burnout,Goal Facilitation,6.0,0.0
+Motivation & Burnout,Trustworthiness,6.5,0.5
+Motivation & Burnout,Usefulness,6.0,0.0
+Motivation & Burnout,Accessibility,7.0,0.0
