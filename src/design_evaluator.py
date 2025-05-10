@@ -17,7 +17,6 @@ from hervoice.agent.evaluation_agents import (
 
 load_dotenv()
 
-
 def run_agentic_evaluation():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_csv_path = os.path.join(current_dir, "agentic_evaluation_results.csv")
@@ -55,7 +54,12 @@ def run_agentic_evaluation():
             generation = actual
             theme = case.get("theme", "Unknown").strip()
 
-            state = ChatState(question=question, generation=generation, metadata={"model_name": "gemini-2.0-flash", "model_provider": "Gemini"}, messages=[])
+            state = ChatState(
+                question=question,
+                generation=generation,
+                metadata={"model_name": "gemini-2.0-flash", "model_provider": "Gemini"},
+                messages=[]
+            )
 
             for agent in agent_funcs:
                 state = agent(state)
@@ -77,15 +81,36 @@ def run_agentic_evaluation():
             results.append(row)
 
         df = pd.DataFrame(results)
+        for col in [
+            "Anthropomorphism", "Attractivity", "Identification",
+            "Goal Facilitation", "Trustworthiness", "Usefulness", "Accessibility"
+        ]:
+            df[col] = df[col].map(likert_mapping).astype('Int64')
         df.to_csv(output_csv_path, index=False)
         print(f"\nAgentic evaluation results saved to {output_csv_path}")
 
     # Likert mapping and summary statistics
-    likert_cols = ["Anthropomorphism", "Attractivity", "Identification", "Goal Facilitation", "Trustworthiness", "Usefulness", "Accessibility"]
+    likert_cols = [
+        "Anthropomorphism",
+        "Attractivity",
+        "Identification",
+        "Goal Facilitation",
+        "Trustworthiness",
+        "Usefulness",
+        "Accessibility"
+    ]
 
-    likert_mapping = {"1 - strongly disagree": 1, "2 - disagree": 2, "3 - somewhat disagree": 3, "4 - neither agree nor disagree": 4, "5 - somewhat agree": 5, "6 - agree": 6, "7 - strongly agree": 7}
+    likert_mapping = {
+        "1 - strongly disagree": 1,
+        "2 - disagree": 2,
+        "3 - somewhat disagree": 3,
+        "4 - neither agree nor disagree": 4,
+        "5 - somewhat agree": 5,
+        "6 - agree": 6,
+        "7 - strongly agree": 7
+    }
 
-    df_numeric = df[likert_cols].replace(likert_mapping).apply(pd.to_numeric, errors="coerce")
+    df_numeric = df[likert_cols].replace(likert_mapping).apply(pd.to_numeric, errors='coerce')
 
     print("\n📊 Mean and Variance per evaluation metric (overall):")
     for col in likert_cols:
@@ -94,8 +119,22 @@ def run_agentic_evaluation():
         var = series.var(ddof=1)
         print(f"{col}: Mean = {mean:.2f}, Variance = {var:.2f}")
 
-    print("\n📚 Mean and Variance per evaluation metric grouped by theme:")
+    print("📚 Mean and Variance per evaluation metric grouped by theme:")
+    print("📌 Number of questions per theme:")
+    theme_counts = df['Theme'].value_counts().sort_index()
+    for theme, count in theme_counts.items():
+        print(f"  {theme}: {count} questions")
     df["Theme"] = df["Theme"].str.strip()
+
+    example_questions = {
+        "Anthropomorphism": "Does the Agent seem like a real person?",
+        "Attractivity": "Do you find the Agent visually appealing?",
+        "Identification": "Can you personally relate to the Agent?",
+        "Goal Facilitation": "Does the Agent understand and help you achieve your goals?",
+        "Trustworthiness": "Do you feel you can trust the Agent?",
+        "Usefulness": "Does the Agent help you complete tasks more effectively?",
+        "Accessibility": "Was the Agent easy to find and interact with?"
+    }
 
     summary_rows = []
 
@@ -104,19 +143,19 @@ def run_agentic_evaluation():
         series = df_numeric[col].dropna()
         mean = series.mean()
         var = series.var(ddof=1)
-        summary_rows.append({"Theme": "Overall", "Metric": col, "Mean": round(mean, 2), "Variance": round(var, 2)})
+        summary_rows.append({"Theme": "Overall", "Metric": col, "Mean": round(mean, 2), "Variance": round(var, 2), "Example Question": example_questions.get(col, "")})
 
     # Collect stats per theme
     for theme in df["Theme"].unique():
         print(f"\nTheme: {theme}")
         df_theme = df[df["Theme"] == theme].copy()
-        df_theme_numeric = df_theme[likert_cols].replace(likert_mapping).apply(pd.to_numeric, errors="coerce")
+        df_theme_numeric = df_theme[likert_cols].replace(likert_mapping).apply(pd.to_numeric, errors='coerce')
         for col in likert_cols:
             series = df_theme_numeric[col].dropna()
             mean = series.mean()
             var = series.var(ddof=1)
             print(f"  {col}: Mean = {mean:.2f}, Variance = {var:.2f}")
-            summary_rows.append({"Theme": theme, "Metric": col, "Mean": round(mean, 2), "Variance": round(var, 2)})
+            summary_rows.append({"Theme": theme, "Metric": col, "Mean": round(mean, 2), "Variance": round(var, 2), "Example Question": example_questions.get(col, "")})
 
     summary_df = pd.DataFrame(summary_rows)
     summary_path = os.path.join(current_dir, "agentic_summary_stats.csv")
