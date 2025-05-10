@@ -91,15 +91,35 @@ Then go to your browser:
 
 This interface connects to the API and provides an interactive chatbot experience.
 
-## 📐 Similarity Evaluation Workflow
+## 📐 4. Evaluation Workflows
+### ✅ Similarity Evaluation
 
-Evaluate chatbot response quality as follows:
+Evaluate response quality using cosine similarity:
 
-1. Run chatbot tests (results saved to `answers_generated.json`):
-
-```bash
 make test
 
+This runs chatbot responses and saves them to answers_generated.json.
+### ✅ Agentic Evaluation (DP1–DP3)
+
+Measure 7 design criteria:
+
+- Anthropomorphism
+- Attractivity
+- Identification
+- Goal Facilitation
+- Trustworthiness
+- Perceived Usefulness
+- Accessibility
+
+Run full evaluation:
+
+`python src/design_evaluator.py`
+
+Outputs are saved to:
+
+`agentic_evaluation_results.csv`
+
+Each row shows binary scores for each design quality.
 
 # ✅ Makefile Usage
 
@@ -112,4 +132,5 @@ make embed          # Preprocess PDFs into vector DB
 make api            # Launch FastAPI backend (http://localhost:8000)
 make ui             # Launch Streamlit frontend (http://localhost:8501)
 make test           # Run chatbot API tests using predefined test cases and similarity matric
+make eval           # Run evaluation metrics for features Anthropomorphism, Attractivity, Identification, Goal Facilitation, Trustworthiness, Usefulness, Accessibility
 ```
