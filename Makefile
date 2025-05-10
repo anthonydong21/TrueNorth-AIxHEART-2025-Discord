@@ -12,6 +12,7 @@ help:
 	@echo "  api      - Run FastAPI server locally"
 	@echo "  ui       - Run Streamlit frontend locally"
 	@echo "  test     - Run similarity evaluator and tests"
+	@echo "  eval     - Run design-centered evaluation"
 	@echo "  dev      - Instructions for running API and UI concurrently"
 	@echo "  venv     - Instructions to activate virtual environment"
 
@@ -33,6 +34,9 @@ test:
 
 tests:
 	@chmod +x ./src/test_examples.sh && ./src/test_examples.sh && $(PYTHON) src/similarity_evaluator.py
+
+eval:
+	$(PYTHON) src/design_evaluator.py
 
 venv:
 	@echo "Activate virtual environment with: source .venv/bin/activate"
