@@ -1,6 +1,6 @@
-# 💜 HerVoice – AI Chatbot Empowering Women in STEM
+# 💜 TrueNorth – PERMA+4 Enhanced Agentic RAG for Long-term Conversational Assistance and Retention Engagemen
 
-HerVoice is an AI-powered support assistant designed to empower women in STEM (Science, Technology, Engineering, and Mathematics). It provides a safe and anonymous space for mentorship, career guidance, emotional support, and navigating workplace challenges.
+TrueNorth is an AI-powered support assistant designed to empower women in STEM (Science, Technology, Engineering, and Mathematics). It provides a safe and anonymous space for mentorship, career guidance, emotional support, and navigating workplace challenges.
 
 ---
 ## ✨ Features
