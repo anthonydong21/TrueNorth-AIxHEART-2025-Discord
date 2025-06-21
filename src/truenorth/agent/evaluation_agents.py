@@ -161,13 +161,21 @@ Output JSON:
 
 # ===== Agent Function Template =====
 def make_eval_agent(name: str):
+    """
+    For TrueNorth's evaluation, we use a different LLM than the Agentic components.
+
+    We use Anthropic's Claude 3.7 Sonnet for evaluation.
+    """
+    eval_model_provider = "Anthropic"
+    eval_model_name = "claude-3-7-sonnet-latest"
+
     def agent(state: ChatState) -> ChatState:
         print(f"\n---{name.upper()} EVALUATION---")
         logger.info(f"[{name}_agent] Evaluating...")
 
         prompt = [HumanMessage(PROMPTS[name].format(question=state.question, generation=state.generation))]
 
-        response = call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=EvaluationOutput, agent_name=f"{name}_agent", verbose=True)
+        response = call_llm(prompt=prompt, model_name=eval_model_name, model_provider=eval_model_provider, pydantic_model=EvaluationOutput, agent_name=f"{name}_agent", verbose=True)
 
         show_agent_reasoning(response, f"{name.title()} Response | {state.metadata['model_name']}")
 
