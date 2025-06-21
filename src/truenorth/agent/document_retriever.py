@@ -10,9 +10,9 @@ from sqlalchemy.engine.url import make_url  # Used to parse and construct databa
 from dotenv import load_dotenv
 
 from .state import ChatState
-from hervoice.utils.logging import get_caller_logger
-from hervoice.utils.llm import call_llm, get_embedding_model
-from hervoice.utils.metaprompt import vectorstore_content_summary
+from truenorth.utils.logging import get_caller_logger
+from truenorth.utils.llm import call_llm, get_embedding_model
+from truenorth.utils.metaprompt import vectorstore_content_summary
 
 load_dotenv()
 logger = get_caller_logger()

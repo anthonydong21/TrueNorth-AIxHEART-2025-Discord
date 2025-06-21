@@ -1,8 +1,8 @@
 import asyncio
 from langchain_core.prompts import PromptTemplate
 from .state import ChatState
-from hervoice.utils.logging import get_caller_logger
-from hervoice.utils.llm import call_llm
+from truenorth.utils.logging import get_caller_logger
+from truenorth.utils.llm import call_llm
 from pydantic import BaseModel, StrictBool
 
 logger = get_caller_logger()

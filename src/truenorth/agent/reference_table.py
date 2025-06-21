@@ -3,9 +3,9 @@ from datetime import datetime
 from langchain_core.prompts import PromptTemplate
 from langchain_core.documents import Document
 from .state import ChatState
-from hervoice.utils.llm import call_llm, extract_json_from_response
-from hervoice.utils.logging import get_caller_logger
-from hervoice.utils.metaprompt import goals_as_str, system_relevant_scope
+from truenorth.utils.llm import call_llm, extract_json_from_response
+from truenorth.utils.logging import get_caller_logger
+from truenorth.utils.metaprompt import goals_as_str, system_relevant_scope
 from pydantic import BaseModel
 from typing import List
 

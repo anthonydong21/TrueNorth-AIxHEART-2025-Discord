@@ -3,10 +3,10 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.messages import SystemMessage
 
 
-from hervoice.agent.state import ChatState, show_agent_reasoning
-from hervoice.utils.llm import call_llm
-from hervoice.utils.logging import get_caller_logger
-from hervoice.utils.metaprompt import goals_as_str, system_relevant_scope
+from truenorth.agent.state import ChatState, show_agent_reasoning
+from truenorth.utils.llm import call_llm
+from truenorth.utils.logging import get_caller_logger
+from truenorth.utils.metaprompt import goals_as_str, system_relevant_scope
 
 logger = get_caller_logger()
 
@@ -28,7 +28,7 @@ Use multiple links to citations to support your advice.
 {system_relevant_scope}
 
 Your job is to respond conversationally while gently guiding the user toward meaningful, empowering, and relevant discussions 
-based on the resources in the HerVoice knowledge base.
+based on the resources in the knowledge base.
 
 ---
 

@@ -2,10 +2,10 @@
 from langchain_core.prompts import PromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from hervoice.agent.state import ChatState, show_agent_reasoning
-from hervoice.utils.llm import call_llm
-from hervoice.utils.logging import get_caller_logger
-from hervoice.utils.metaprompt import vectorstore_content_summary, system_relevant_scope
+from truenorth.agent.state import ChatState, show_agent_reasoning
+from truenorth.utils.llm import call_llm
+from truenorth.utils.logging import get_caller_logger
+from truenorth.utils.metaprompt import vectorstore_content_summary, system_relevant_scope
 
 logger = get_caller_logger()
 

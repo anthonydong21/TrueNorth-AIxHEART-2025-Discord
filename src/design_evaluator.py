@@ -4,8 +4,8 @@ import os
 import json
 from dotenv import load_dotenv
 
-from hervoice.agent.state import ChatState
-from hervoice.agent.evaluation_agents import (
+from truenorth.agent.state import ChatState
+from truenorth.agent.evaluation_agents import (
     anthropomorphism_agent,
     attractivity_agent,
     identification_agent,

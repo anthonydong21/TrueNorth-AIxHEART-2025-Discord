@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Simple shell script to test HerVoice chatbot API
+# Simple shell script to test chatbot API
 
 QUESTION="What is LangChain?"
 
