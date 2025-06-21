@@ -3,3 +3,4 @@ __pycache__
 books_pdf/*.pdf
 .DS_Store
 .logs
+truenorth-vertex-ai-key.json
