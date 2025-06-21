@@ -19,6 +19,125 @@ class EvaluationOutput(BaseModel):
 
 # ===== Prompt Templates =====
 PROMPTS = {
+    # ✅ MR1: Foster Gender-Conscious Engagement
+    "gender_consciousness": PromptTemplate.from_template(
+        """
+You are evaluating whether the chatbot engages in a way that is mindful of gender inclusion.
+
+Context:
+- User Question: {question}
+- Chatbot Response: {generation}
+
+Task:
+Does the response avoid reinforcing gender stereotypes and foster a sense of respect for gender diversity?
+
+Output JSON:
+- result: "1 - strongly disagree" to "7 - strongly agree"
+- explanation: brief reason
+    """
+    ),
+    # ✅ MR2: Provide Intuitive and Empathic Responses
+    "empathic_intuition": PromptTemplate.from_template(
+        """
+You are evaluating whether the chatbot response is intuitive and emotionally aware.
+
+Context:
+- User Question: {question}
+- Chatbot Response: {generation}
+
+Task:
+Does the chatbot anticipate the user’s emotional state and respond in a way that feels natural and caring?
+
+Output JSON:
+- result: "1 - strongly disagree" to "7 - strongly agree"
+- explanation: brief reason
+"""
+    ),
+    # ✅ MR3: Personal Experience and Visual Interaction
+    "personal_visual_engagement": PromptTemplate.from_template(
+        """
+You are assessing whether the chatbot response reflects personalized or visually enriched engagement.
+
+Context:
+- User Question: {question}
+- Chatbot Response: {generation}
+
+Task:
+Does the chatbot acknowledge personal context or incorporate visual/interactive elements that enhance connection?
+
+Output JSON:
+- result: "1 - strongly disagree" to "7 - strongly agree"
+- explanation: brief reason
+"""
+    ),
+    # ✅ MR4: Establish Credible and Relatable Interactions
+    "credibility_relatability": PromptTemplate.from_template(
+        """
+You are evaluating the credibility and relatability of the chatbot’s response.
+
+Context:
+- User Question: {question}
+- Chatbot Response: {generation}
+
+Task:
+Does the chatbot provide reliable information in a tone and manner that feels relatable to the user?
+
+Output JSON:
+- result: "1 - strongly disagree" to "7 - strongly agree"
+- explanation: brief reason
+"""
+    ),
+    # ✅ MR5: Cultivate an Inclusive Community
+    "inclusivity": PromptTemplate.from_template(
+        """
+You are evaluating whether the chatbot response supports inclusive community-building.
+
+Context:
+- User Question: {question}
+- Chatbot Response: {generation}
+
+Task:
+Does the chatbot encourage connection, belonging, or inclusion in a diverse environment?
+
+Output JSON:
+- result: "1 - strongly disagree" to "7 - strongly agree"
+- explanation: brief reason
+"""
+    ),
+    # ✅ MR6: Enhance User Agency
+    "user_agency": PromptTemplate.from_template(
+        """
+You are evaluating whether the chatbot empowers users to make informed, independent decisions.
+
+Context:
+- User Question: {question}
+- Chatbot Response: {generation}
+
+Task:
+Does the chatbot support the user’s autonomy and sense of control in the interaction?
+
+Output JSON:
+- result: "1 - strongly disagree" to "7 - strongly agree"
+- explanation: brief reason
+"""
+    ),
+    # ✅ MR7: Simplify Information Processing
+    "cognitive_simplicity": PromptTemplate.from_template(
+        """
+You are evaluating whether the chatbot simplifies complex information for easier user comprehension.
+
+Context:
+- User Question: {question}
+- Chatbot Response: {generation}
+
+Task:
+Does the chatbot break down information clearly and reduce cognitive overload?
+
+Output JSON:
+- result: "1 - strongly disagree" to "7 - strongly agree"
+- explanation: brief reason
+"""
+    ),
     "anthropomorphism": PromptTemplate.from_template(
         """
 You are an evaluator judging whether a chatbot response feels like it's from a human.
@@ -162,12 +281,8 @@ Output JSON:
 # ===== Agent Function Template =====
 def make_eval_agent(name: str):
     """
-    For TrueNorth's evaluation, we use a different LLM than the Agentic components.
-
-    We use Anthropic's Claude 3.7 Sonnet for evaluation.
+    AI-as-a-Judge Evaluation Agent
     """
-    eval_model_provider = "Anthropic"
-    eval_model_name = "claude-3-7-sonnet-latest"
 
     def agent(state: ChatState) -> ChatState:
         print(f"\n---{name.upper()} EVALUATION---")
@@ -175,7 +290,7 @@ def make_eval_agent(name: str):
 
         prompt = [HumanMessage(PROMPTS[name].format(question=state.question, generation=state.generation))]
 
-        response = call_llm(prompt=prompt, model_name=eval_model_name, model_provider=eval_model_provider, pydantic_model=EvaluationOutput, agent_name=f"{name}_agent", verbose=True)
+        response = call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=EvaluationOutput, agent_name=f"{name}_agent", verbose=True)
 
         show_agent_reasoning(response, f"{name.title()} Response | {state.metadata['model_name']}")
 
@@ -195,3 +310,10 @@ goal_facilitation_agent = make_eval_agent("goal_facilitation")
 trustworthiness_agent = make_eval_agent("trustworthiness")
 usefulness_agent = make_eval_agent("usefulness")
 accessibility_agent = make_eval_agent("accessibility")
+gender_consciousness_agent = make_eval_agent("gender_consciousness")
+empathic_intuition_agent = make_eval_agent("empathic_intuition")
+personal_visual_engagement_agent = make_eval_agent("personal_visual_engagement")
+credibility_relatability_agent = make_eval_agent("credibility_relatability")
+inclusivity_agent = make_eval_agent("inclusivity")
+user_agency_agent = make_eval_agent("user_agency")
+cognitive_simplicity_agent = make_eval_agent("cognitive_simplicity")

@@ -7,7 +7,7 @@ from typing import Tuple, List, Dict, Any, Optional, TypeVar, Type, Union
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from langchain_anthropic import ChatAnthropic
+from langchain_anthropic import Anthropic, ChatAnthropic
 from langchain_deepseek import ChatDeepSeek
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
@@ -190,6 +190,9 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
     model_info = get_model_info(model_name)
     llm = get_model(model_name, model_provider)
 
+    logger.info(f"LLM model provider : {model_provider}")
+    logger.info(f"LLM model provider is Claude : {model_provider == "Anthropic"}")
+
     if pydantic_model:
         if model_info and pydantic_model:
             logger.info("Attempting structured output")
@@ -200,30 +203,60 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
             logger.info(f"LLM call attempt #{attempt}")
             if verbose:
                 logger.info(f"Prompt: {prompt}")
+
             result = llm.invoke(prompt)
+
             if verbose:
                 logger.info(f"LLM Result: {result}")
 
             if pydantic_model:
+                # Handle different providers consistently
+                if model_provider == "Anthropic":
+                    # For Anthropic with structured output, result is already the pydantic model
+                    if isinstance(result, pydantic_model):
+                        return result
+                    else:
+                        # Fallback if structured output didn't work
+                        result_content = str(result)
+                else:
+                    # For other providers, extract content
+                    result_content = result.content
+
+                # Handle Gemini special case
                 if model_info and model_info.is_gemini():
                     if isinstance(result, pydantic_model):
                         return result
-                    parsed = extract_json_from_response(result.content)
+                    parsed = extract_json_from_response(result_content)
                     if not parsed:
-                        raise ValueError(f"[Gemini] Failed to extract JSON from:\n{result.content}")
+                        raise ValueError(f"[Gemini] Failed to extract JSON from:\n{result_content}")
                     return instantiate_model(pydantic_model, parsed)
+
+                # Handle models without JSON mode
                 elif model_info and not model_info.has_json_mode():
-                    parsed = extract_json_from_response(result.content)
+                    parsed = extract_json_from_response(result_content)
                     if parsed:
                         return instantiate_model(pydantic_model, parsed)
-                else:
-                    raw_output = result.content.strip().lower()
-                    if raw_output in {"true", "false"}:
-                        return instantiate_model(pydantic_model, raw_output == "true")
                     else:
-                        raise ValueError(f"Unexpected non-JSON raw output: {result.content}")
+                        # Try to handle simple boolean responses
+                        raw_output = result_content.strip().lower()
+                        if raw_output in {"true", "false"}:
+                            return instantiate_model(pydantic_model, raw_output == "true")
+                        else:
+                            raise ValueError(f"Unexpected non-JSON raw output: {result_content}")
+
+                # For other providers with structured output
+                else:
+                    if isinstance(result, pydantic_model):
+                        return result
+                    # If structured output failed, try to parse as JSON
+                    parsed = extract_json_from_response(result_content)
+                    if parsed:
+                        return instantiate_model(pydantic_model, parsed)
+                    else:
+                        raise ValueError(f"Failed to parse structured output: {result_content}")
 
             return result
+
         except Exception as e:
             logger.error(f"LLM call failed: {e}")
             if agent_name:
