@@ -1,5 +1,5 @@
 [project]
-name = "her-voice"
+name = "truenorth"
 version = "0.1.0"
 description = ""
 authors = []
@@ -41,7 +41,7 @@ seaborn = "^0.13.2"
 
 [tool.poetry]
 packages = [
-    { include = "hervoice", from = "src" },
+    { include = "truenorth", from = "src" },
 ]
 
 [tool.poetry.group.dev.dependencies]

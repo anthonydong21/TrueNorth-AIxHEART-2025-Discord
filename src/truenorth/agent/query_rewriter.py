@@ -3,9 +3,9 @@ from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
 from .state import ChatState
-from hervoice.utils.logging import get_caller_logger
-from hervoice.utils.metaprompt import vectorstore_content_summary
-from hervoice.utils.llm import call_llm
+from truenorth.utils.logging import get_caller_logger
+from truenorth.utils.metaprompt import vectorstore_content_summary
+from truenorth.utils.llm import call_llm
 
 logger = get_caller_logger()
 

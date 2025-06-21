@@ -69,7 +69,7 @@ Before running the chatbot, convert your PDFs into searchable vector embeddings:
 
 Start the backend server (runs on port 8000):
 
-`poetry run uvicorn hervoice.app:app --reload`
+`poetry run uvicorn truenorth.app:app --reload`
 
 ### 🔗 API Docs
 
@@ -77,13 +77,13 @@ Once running, access the API docs and test endpoints at:
 
 ```http://localhost:8000/docs```
 
-This Swagger UI lets you test HerVoice programmatically and inspect endpoint responses.
+This Swagger UI lets you test Streamlit UI programmatically and inspect endpoint responses.
 
 ## 🌸 3. Launch the Streamlit UI
 
 In a separate terminal, start the frontend (runs on port 8501):
 
-```streamlit run HerVoice.py```
+```streamlit run streamlit_ui.py```
 
 Then go to your browser:
 

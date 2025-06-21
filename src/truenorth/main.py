@@ -2,7 +2,7 @@ import os
 from typing import Tuple, List, Dict, Any, Optional
 from pydantic import ValidationError
 from langchain_core.messages import HumanMessage
-from hervoice.utils.logging import get_caller_logger
+from truenorth.utils.logging import get_caller_logger
 
 
 # def run_chatbot(question: str):

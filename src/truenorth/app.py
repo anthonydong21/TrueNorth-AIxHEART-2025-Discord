@@ -7,8 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage
 
-from hervoice.utils.progress import progress
-from hervoice.graph import build_rag_graph, save_graph_as_png
+from truenorth.utils.progress import progress
+from truenorth.graph import build_rag_graph, save_graph_as_png
 
 # === Logging Setup ===
 file_path = os.path.realpath(__file__)
@@ -67,16 +67,18 @@ async def invoke_llm(question: str) -> Tuple[str, List[Any]]:
         save_graph_as_png(agent, os.path.join(log_dir, "graph.png"))
 
         try:
-            final_state = await agent.ainvoke({
-                "question": question,
-                "messages": [HumanMessage(content=question)],
-                "data": [],
-                "metadata": {
-                    "show_reasoning": True,
-                    "model_name": model_name,
-                    "model_provider": model_provider,
+            final_state = await agent.ainvoke(
+                {
+                    "question": question,
+                    "messages": [HumanMessage(content=question)],
+                    "data": [],
+                    "metadata": {
+                        "show_reasoning": True,
+                        "model_name": model_name,
+                        "model_provider": model_provider,
+                    },
                 }
-            })
+            )
         except Exception as e:
             logger.exception("🔥 LangGraph execution failed")
             raise e
@@ -101,7 +103,7 @@ async def invoke_llm(question: str) -> Tuple[str, List[Any]]:
 
 
 @app.post("/query", response_model=QueryOutput)
-async def get_hervoice_response(input_data: QueryInput):
+async def get_chat_response(input_data: QueryInput):
     response, usage = await invoke_llm(input_data.question)
     return QueryOutput(response=response, usage=usage)
 

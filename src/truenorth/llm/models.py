@@ -8,7 +8,7 @@ from langchain_ollama import ChatOllama
 from enum import Enum
 from pydantic import BaseModel
 from typing import Tuple, List, Dict, Any, Optional
-from hervoice.utils.logging import get_caller_logger
+from truenorth.utils.logging import get_caller_logger
 
 logger = get_caller_logger()
 from dotenv import load_dotenv

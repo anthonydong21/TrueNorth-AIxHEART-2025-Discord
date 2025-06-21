@@ -17,8 +17,8 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_core.utils.function_calling import convert_to_openai_function
 
 
-from hervoice.utils.logging import get_caller_logger
-from hervoice.utils.progress import progress
+from truenorth.utils.logging import get_caller_logger
+from truenorth.utils.progress import progress
 
 logger = get_caller_logger()
 load_dotenv()

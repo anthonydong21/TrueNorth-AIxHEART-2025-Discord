@@ -1,6 +1,6 @@
 from langchain_core.tools import tool
 from .state import ChatState
-from hervoice.utils.logging import get_caller_logger
+from truenorth.utils.logging import get_caller_logger
 
 
 @tool
