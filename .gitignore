@@ -4,4 +4,5 @@ books_pdf*
 vector_store*
 .DS_Store
 .logs
+*.log
 truenorth-vertex-ai-key.json
