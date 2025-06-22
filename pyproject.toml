@@ -38,6 +38,7 @@ langchain-postgres = "^0.0.14"
 psycopg = {extras = ["binary", "pool"], version = "^3.2.6"}
 unstructured = "^0.17.2"
 seaborn = "^0.13.2"
+faiss-cpu = "^1.11.0"
 
 [tool.poetry]
 packages = [
