@@ -47,7 +47,6 @@ source .venv/bin/activate
 You need an `.env` file with these values set up:
 ```
 export GEMINI_API_KEY="something"
-export DB_CONNECTION= "postgresql+psycopg://something"
 export DEFAULT_GOOGLE_PROJECT="something"
 export GOOGLE_CLOUD_LOCATION=us-central1
 ...
