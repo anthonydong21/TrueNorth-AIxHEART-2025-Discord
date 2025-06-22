@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.documents import Document  # Standard document format used in LangChain pipelines
@@ -16,7 +17,7 @@ load_dotenv()
 logger = get_caller_logger()
 
 # FAISS vector store path (replace database connection)
-VECTOR_STORE_PATH = os.path.join(os.path.dirname(__file__), "..", "vector_store", "truenorth_kb_vectorstore")
+VECTOR_STORE_PATH = Path(__file__).parent.parent.parent / "vector_store" / "truenorth_kb_vectorstore/"
 
 # Define the multi-query generation prompt
 multi_query_generation_prompt = PromptTemplate.from_template(

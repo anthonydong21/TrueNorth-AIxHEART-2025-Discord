@@ -283,7 +283,7 @@ def main():
             print("\n🎉 Processing complete!")
             print(f"⏱️  Total processing time: {processing_time:.2f} seconds")
             print(f"📄 Logs saved to: {log_filename}")
-            print(f"💾 Vector store saved to: {os.path.join(vector_store_dir, 'kb_vectorstore')}")
+            print(f"💾 Vector store saved to: {os.path.join(vector_store_dir, 'truenorth_kb_vectorstore')}")
             print(f"📊 Total documents in vector store: {vector_store.index.ntotal}")
             print(f"🚀 Processing speed: {len(all_chunks)/processing_time:.1f} chunks/second")
         else:
