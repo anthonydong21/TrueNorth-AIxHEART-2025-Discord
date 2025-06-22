@@ -7,7 +7,7 @@ TrueNorth is an AI-powered support assistant designed to empower early-career pr
 
 - 🤖 **Conversational Agent** built with Google Gemini for empathetic and informative support  
 - 🔍 **Multi-query Retrieval-Augmented Generation (RAG)** with MMR and RRF for accurate answers  
-- 📚 **Custom Vector Database** using `PGVector` to index curated resources and books  
+- 📚 **Custom Vector Database** using Langchain FAISS Local Vector Store to index curated resources and books  
 - 🌐 **Tavily Web Search** integration for current, real-world information  
 - ✅ **Answer Verification** using hallucination and relevance grading  
 - 🧠 **Query Rewriting** for improving search coverage  
@@ -19,8 +19,8 @@ TrueNorth is an AI-powered support assistant designed to empower early-career pr
 
 | Component    | Technology                              |
 |--------------|------------------------------------------|
-| LLM          | Google Gemini (via `langchain_google_genai`) |
-| Vector Store | PostgreSQL + pgvector                    |
+| LLM          | Google Gemini (via `langchain_google_genai`)|
+| Vector Store | Langchain FAISS Local Vector Store        |
 | Embeddings   | GoogleGenerativeAIEmbeddings             |
 | Frontend     | Streamlit and FastAPI                    |
 | Web Search   | Tavily API                               |
@@ -32,7 +32,7 @@ TrueNorth is an AI-powered support assistant designed to empower early-career pr
 
 Create a local virtual environment with Poetry using
 ```
- poetry config virtualenvs.in-project true
+poetry config virtualenvs.in-project true
 ```
 Then, `cd` into the directory that contains pyproject.toml and poetry.lock. Install the poetry environment with this terminal command:
 ```

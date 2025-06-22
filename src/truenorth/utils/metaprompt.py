@@ -1,4 +1,4 @@
-# shared phrases used in agent prompts
+# metaprompt.py - shared phrases used in agent prompts
 
 # Design principles
 DP1 = "engineer an emotionally intelligent and stereotype-neutral interface within the conversational agent to encourage contextually relevant and engaging interactions, allowing the user to develop high competency and reputation in professional and academic STEM environments"
@@ -9,4 +9,4 @@ goals_as_str = "\n".join([f"{i}. {goal}" for i, goal in enumerate([DP1, DP2, DP3
 
 vectorstore_content_summary = "communcation strategies rooted in conflict resolution and diplomacy, positive psychology, dialectical behavioral therapy, leadership skills, coping mechanisms"
 
-system_relevant_scope = "optimizing comfort in lived environment, maintaining positive trajectory towards maximizing STEM career"
+system_relevant_scope = "STEM topics, optimizing comfort in lived environment, maintaining positive trajectory towards maximizing STEM career"
