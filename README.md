@@ -96,9 +96,9 @@ This interface connects to the API and provides an interactive chatbot experienc
 
 Evaluate response quality using cosine similarity:
 
-make test
+`make test`
 
-This runs chatbot responses and saves them to answers_generated.json.
+This runs chatbot responses and saves them to `answers_generated.json`.
 ### ✅ Agentic Evaluation (DP1–DP3)
 
 Measure 7 design criteria:
@@ -124,6 +124,7 @@ Each row shows binary scores for each design quality.
 # ✅ Makefile Usage
 
 If `make` is installed, you can simplify operations with:
+
 🔧 Local setup (no Docker)
 
 ```
