@@ -210,7 +210,7 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
             if verbose:
                 logger.info(f"LLM Result: {result}")
 
-            if pydantic_model:
+            if pydantic_model and not isinstance(result, pydantic_model):
                 # Handle different providers consistently
                 if model_provider == "Anthropic":
                     # For Anthropic with structured output, result is already the pydantic model
