@@ -1,3 +1,4 @@
+# knowledge.py
 import os
 import logging
 from datetime import datetime
@@ -34,16 +35,16 @@ BOOKS_DIR = os.path.join(os.path.dirname(__file__), "books_pdf_sample")
 SUPPORTED_EXTENSIONS = {".pdf", ".epub", ".txt"}
 
 # Initialize the text splitter (more efficient configuration)
-text_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=[("#", "Header 1"), ("##", "Header 2"), ("###", "Header 3")], strip_headers=False)  # Reduced header levels for faster processing
+text_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=[("#", "Header 1"), ("##", "Header 2"), ("###", "Header 3")], strip_headers=False)
 
 # Configuration from environment
 PROJECT_ID = os.getenv("DEFAULT_GOOGLE_PROJECT")
 REGION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-west2")
 
 # Performance settings
-MAX_WORKERS = min(multiprocessing.cpu_count(), 4)  # Limit concurrent workers
-BATCH_SIZE = 50  # Process documents in batches for embedding
-CHUNK_SIZE = 800  # Smaller chunks for faster processing
+MAX_WORKERS = min(multiprocessing.cpu_count(), 4)
+BATCH_SIZE = 50
+CHUNK_SIZE = 800
 
 
 def get_embedding_model():
@@ -62,33 +63,43 @@ def get_embedding_model():
 
 def load_and_clean_file_fast(filepath: str) -> List[Document]:
     """
-    Optimized file loading with reduced processing overhead.
+    Optimized file loading with correct page number preservation.
     """
     ext = os.path.splitext(filepath)[1].lower()
     filename = os.path.basename(filepath)
 
     try:
         if ext == ".pdf":
-            # Use single mode for faster loading
-            loader = PyMuPDF4LLMLoader(file_path=filepath, mode="single")
+            # Use page mode to preserve individual page information
+            loader = PyMuPDF4LLMLoader(file_path=filepath, mode="page")
             docs = loader.load()
+
+            # Ensure page numbers are correctly set in metadata
+            for i, doc in enumerate(docs):
+                if "page" not in doc.metadata or doc.metadata["page"] is None:
+                    # Extract page number from source if available, otherwise use index + 1
+                    doc.metadata["page"] = i + 1
+
         elif ext == ".epub":
             loader = UnstructuredEPubLoader(filepath, mode="elements")
             docs = loader.load()
         elif ext == ".txt":
             with open(filepath, "r", encoding="utf-8") as f:
                 content = f.read()
-            docs = [Document(page_content=content, metadata={"source": filepath, "filename": filename})]
+            docs = [Document(page_content=content, metadata={"source": filepath, "filename": filename, "page": 1})]
         else:
             return []
 
         # Streamlined cleaning with less aggressive filtering
         if docs:
             cleaned_docs, _ = clean_pdf_documents(docs, min_content_length=50, verbose=False)
-            # Add filename to metadata during loading
+            # Add filename and ensure page numbers are preserved
             for doc in cleaned_docs:
                 doc.metadata["filename"] = filename
                 doc.metadata["file_type"] = ext
+                # Ensure page number exists
+                if "page" not in doc.metadata:
+                    doc.metadata["page"] = 1
             return cleaned_docs
         return []
 
@@ -99,7 +110,7 @@ def load_and_clean_file_fast(filepath: str) -> List[Document]:
 
 def chunk_documents_fast(docs: List[Document]) -> List[Document]:
     """
-    Optimized chunking with smaller, more manageable chunks.
+    Optimized chunking with page number preservation.
     """
     chunks = []
     for doc in docs:
@@ -111,6 +122,7 @@ def chunk_documents_fast(docs: List[Document]) -> List[Document]:
                 # Simple truncation for speed
                 chunk.page_content = chunk.page_content[:CHUNK_SIZE] + "..."
 
+            # Preserve all metadata including page numbers
             chunk.metadata.update(doc.metadata)
             chunks.append(chunk)
 
@@ -135,7 +147,9 @@ def process_file_batch(file_batch: List[str]) -> List[Document]:
                 if docs:
                     chunks = chunk_documents_fast(docs)
                     all_chunks.extend(chunks)
-                    print(f"✅ Processed {os.path.basename(filepath)}: {len(chunks)} chunks")
+                    # Show page count information
+                    page_info = f"pages {min(d.metadata.get('page', 1) for d in docs)}-{max(d.metadata.get('page', 1) for d in docs)}" if len(docs) > 1 else f"page {docs[0].metadata.get('page', 1)}"
+                    print(f"✅ Processed {os.path.basename(filepath)}: {len(chunks)} chunks from {page_info}")
             except Exception as e:
                 print(f"❌ Error processing {os.path.basename(filepath)}: {e}")
 
@@ -146,7 +160,7 @@ def build_vectorstore_incrementally(all_chunks: List[Document], embedding_model,
     """
     Build vector store incrementally with batching for better memory management.
     """
-    vector_store_path = os.path.join(vector_store_dir, "kb_vectorstore")
+    vector_store_path = os.path.join(vector_store_dir, "truenorth_kb_vectorstore")
     os.makedirs(vector_store_dir, exist_ok=True)
 
     # Check if vector store exists
@@ -197,6 +211,26 @@ def get_file_batches(book_files: List[str], batch_size: int = 3) -> List[List[st
     for i in range(0, len(book_files), batch_size):
         batches.append(book_files[i : i + batch_size])
     return batches
+
+
+def validate_page_numbers(chunks: List[Document]) -> None:
+    """
+    Validate that page numbers are correctly assigned to chunks.
+    """
+    print("\n📊 Page number validation:")
+    page_counts = {}
+    for chunk in chunks:
+        page = chunk.metadata.get("page", "Unknown")
+        filename = chunk.metadata.get("filename", "Unknown")
+        key = f"{filename}_page_{page}"
+        page_counts[key] = page_counts.get(key, 0) + 1
+
+    # Show sample page distribution
+    for key, count in list(page_counts.items())[:10]:  # Show first 10
+        print(f"  {key}: {count} chunks")
+
+    if len(page_counts) > 10:
+        print(f"  ... and {len(page_counts) - 10} more page groups")
 
 
 def main():
@@ -270,6 +304,10 @@ def main():
         return
 
     print(f"\n📊 Generated {len(all_chunks)} total chunks")
+
+    # Validate page numbers
+    validate_page_numbers(all_chunks)
+
     print("🏗️  Building vector store...")
 
     # Build vector store incrementally
