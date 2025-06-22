@@ -2,7 +2,7 @@
 
 # Simple shell script to test chatbot API
 
-QUESTION="What is LangChain?"
+QUESTION="I feel like it's just me struggling."
 
 echo "Sending question: $QUESTION"
 
