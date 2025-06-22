@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 from enum import Enum
 import re
 from typing import Tuple, List, Dict, Any, Optional, TypeVar, Type, Union
@@ -258,7 +259,11 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
             return result
 
         except Exception as e:
-            logger.error(f"LLM call failed: {e}")
+            # Get the current traceback
+            tb = traceback.format_exc()
+            logger.error(f"LLM call failed on attempt {attempt}: {e}")
+            logger.error(f"Full traceback:\n{tb}")
+
             if agent_name:
                 progress.update_status(agent_name, None, f"Retry {attempt}/{max_retries}")
             if attempt == max_retries:
