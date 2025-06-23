@@ -1,0 +1,51 @@
+📊 Summary Statistics Grouped by Design Principle
+============================================================
+
+DP1 - Emotionally Intelligent & Stereotype-Neutral
+--------------------------------------------------
+  Core Metrics (Statkus et al., 2024):
+    Anthropomorphism: Mean = 3.86, Variance = 0.14
+    Identification: Mean = 3.94, Variance = 0.20
+  Meta-Requirements (Gender-Inclusive STEM):
+    Gender-Consciousness (MR1): Mean = 4.09, Variance = 0.17
+    Empathic Intuition (MR2): Mean = 4.15, Variance = 0.30
+  Overall DP1 - Emotionally Intelligent & Stereotype-Neutral Mean: 4.01
+
+DP2 - Trustworthy & Personalized Community
+------------------------------------------
+  Core Metrics (Statkus et al., 2024):
+    Trustworthiness: Mean = 4.10, Variance = 0.22
+  Meta-Requirements (Gender-Inclusive STEM):
+    Personal Visual Engagement (MR3): Mean = 3.40, Variance = 0.47
+    Credibility Relatability (MR4): Mean = 4.00, Variance = 0.23
+    Inclusive Community (MR5): Mean = 4.17, Variance = 0.35
+  Overall DP2 - Trustworthy & Personalized Community Mean: 3.92
+
+DP3 - Empowering & Streamlined Interactions
+-------------------------------------------
+  Core Metrics (Statkus et al., 2024):
+    Goal Facilitation: Mean = 4.05, Variance = 0.33
+    Usefulness: Mean = 3.78, Variance = 0.27
+    Accessibility: Mean = 3.89, Variance = 0.10
+    Attractivity: Mean = 3.66, Variance = 0.28
+  Meta-Requirements (Gender-Inclusive STEM):
+    User Agency (MR6): Mean = 3.91, Variance = 0.19
+    Cognitive Simplicity (MR7): Mean = 3.92, Variance = 0.16
+  Overall DP3 - Empowering & Streamlined Interactions Mean: 3.87
+
+📌 Distribution of Questions by Theme
+========================================
+  Confidence & Self-Efficacy: 12 questions
+  Motivation & Burnout: 8 questions
+  Passion & Career Purpose: 8 questions
+  Family Expectations: 8 questions
+  Male Allyship: 8 questions
+  HR & Reporting Challenges: 8 questions
+  Impression Management: 8 questions
+  Work-Life Balance: 8 questions
+  Mentorship Gaps: 8 questions
+  Proactive Leadership: 8 questions
+  General Support: 8 questions
+  Gendered Culture: 8 questions
+  Stereotypes at Work: 8 questions
+  Career Navigation: 8 questions

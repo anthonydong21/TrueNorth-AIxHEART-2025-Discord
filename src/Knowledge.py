@@ -29,7 +29,7 @@ log_filename = os.path.join(current_script_dir, f"cleaning_{datetime.now().strft
 logging.basicConfig(filename=log_filename, filemode="a", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Define the directory containing the books
-BOOKS_DIR = os.path.join(os.path.dirname(__file__), "books_pdf_sample")
+BOOKS_DIR = os.path.join(os.path.dirname(__file__), "books_pdf")
 
 # Define supported file extensions
 SUPPORTED_EXTENSIONS = {".pdf", ".epub", ".txt"}
@@ -45,6 +45,10 @@ REGION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-west2")
 MAX_WORKERS = min(multiprocessing.cpu_count(), 4)
 BATCH_SIZE = 50
 CHUNK_SIZE = 800
+
+# NEW: Test run flag
+TEST_RUN = os.getenv("TEST_RUN", "False").lower() == "true"
+TEST_FILE_NAME = os.getenv("TEST_FILE_NAME", None)  # Optional: specific file for test run
 
 
 def get_embedding_model():
@@ -273,12 +277,32 @@ def main():
         print("⚠️  No supported book files found to process.")
         return
 
-    print(f"📚 Found {len(book_files)} files to process...")
+    # NEW: Apply test run logic
+    if TEST_RUN:
+        if TEST_FILE_NAME:
+            # Try to find the specified test file
+            found_test_file = False
+            for f_path in book_files:
+                if os.path.basename(f_path) == TEST_FILE_NAME:
+                    book_files = [f_path]
+                    found_test_file = True
+                    break
+            if not found_test_file:
+                print(f"❌ Specified TEST_FILE_NAME '{TEST_FILE_NAME}' not found in {BOOKS_DIR}. Exiting.")
+                return
+        else:
+            # If no specific file is named, just take the first one
+            book_files = [book_files[0]]
+        print(f"📚 Processing {len(book_files)} file(s) in test mode...")
+    else:
+        print(f"📚 Found {len(book_files)} files to process...")
+
     print(f"💾 Vector store location: {vector_store_dir}")
     print()
 
     # Split files into batches for parallel processing
-    file_batches = get_file_batches(book_files, batch_size=3)
+    # In test mode, we'll still use batches, but it will likely be a single batch
+    file_batches = get_file_batches(book_files, batch_size=6)
     all_chunks = []
 
     print(f"🔄 Processing {len(file_batches)} batches in parallel...")
