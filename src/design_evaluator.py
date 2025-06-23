@@ -206,9 +206,6 @@ def run_agentic_evaluation(max_workers=4, test_run=False):
                 if df[col].isnull().any():
                     print(f"DEBUG: Column '{col}' contains NaN values after conversion.")
                     print(df[df[col].isnull()])  # Shows rows where this column is NaN
-
-        print(df)
-
         # Always save results to CSV, even in test_run mode, to avoid NA issues downstream if reloaded
         df.to_csv(output_csv_path, index=False)
         if not test_run:
@@ -321,7 +318,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Run TrueNorth Agentic Evaluation")
-    parser.add_argument("--workers", type=int, default=8, help="Number of parallel workers (default: 4)")
+    parser.add_argument("--workers", type=int, default=1, help="Number of parallel workers (default: 1). Google Gemini supports up to 8.")
     parser.add_argument("--test-run", action="store_true", help="Run only one test case to save on costs")
     args = parser.parse_args()
 
