@@ -93,9 +93,7 @@ This interface connects to the API and provides an interactive chatbot experienc
 ## 📐 4. Evaluation Workflows
 TrueNorth implements a comprehensive evaluation framework with 14 distinct metrics organized into two categories:
 
-### ✅ Core Design Principles (Statkus et al., 2024)
-
-onversational Agent Metrics:
+### ✅ Conversational Agent (Statkus et al., 2024)
 
 - **Anthropomorphism** - Human-like interaction quality
 - **Attractivity** - Visual appeal and engagement
