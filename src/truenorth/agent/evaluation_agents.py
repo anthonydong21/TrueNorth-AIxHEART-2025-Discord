@@ -14,7 +14,7 @@ logger = get_caller_logger()
 
 # ===== Pydantic Models =====
 class EvaluationOutput(BaseModel):
-    result: Literal["1 - strongly disagree", "2 - disagree", "3 - somewhat disagree", "4 - neither agree nor disagree", "5 - somewhat agree", "6 - agree", "7 - strongly agree"] = Field(..., description="Likert score for the evaluated construct")
+    result: Literal["1 - strongly disagree", "2 - disagree", "3 - neutral", "4 - agree", "5 - strongly agree"] = Field(..., description="Likert score for the evaluated construct (1-5 scale)")
     explanation: str = Field(..., description="1–2 sentence explanation for the rating")
 
 
@@ -33,7 +33,7 @@ Task:
 Does the response avoid reinforcing gender stereotypes and foster a sense of respect for gender diversity?
 
 Output JSON:
-- result: "1 - strongly disagree" to "7 - strongly agree"
+- result: "1 - strongly disagree" to "5 - strongly agree"
 - explanation: brief reason
     """
     ),
@@ -47,10 +47,10 @@ Context:
 - Chatbot Response: {generation}
 
 Task:
-Does the chatbot anticipate the user’s emotional state and respond in a way that feels natural and caring?
+Does the chatbot anticipate the user's emotional state and respond in a way that feels natural and caring?
 
 Output JSON:
-- result: "1 - strongly disagree" to "7 - strongly agree"
+- result: "1 - strongly disagree" to "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -67,14 +67,14 @@ Task:
 Does the chatbot acknowledge personal context or incorporate visual/interactive elements that enhance connection?
 
 Output JSON:
-- result: "1 - strongly disagree" to "7 - strongly agree"
+- result: "1 - strongly disagree" to "5 - strongly agree"
 - explanation: brief reason
 """
     ),
     # ✅ MR4: Establish Credible and Relatable Interactions
     "credibility_relatability": PromptTemplate.from_template(
         """
-You are evaluating the credibility and relatability of the chatbot’s response.
+You are evaluating the credibility and relatability of the chatbot's response.
 
 Context:
 - User Question: {question}
@@ -84,7 +84,7 @@ Task:
 Does the chatbot provide reliable information in a tone and manner that feels relatable to the user?
 
 Output JSON:
-- result: "1 - strongly disagree" to "7 - strongly agree"
+- result: "1 - strongly disagree" to "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -101,7 +101,7 @@ Task:
 Does the chatbot encourage connection, belonging, or inclusion in a diverse environment?
 
 Output JSON:
-- result: "1 - strongly disagree" to "7 - strongly agree"
+- result: "1 - strongly disagree" to "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -115,10 +115,10 @@ Context:
 - Chatbot Response: {generation}
 
 Task:
-Does the chatbot support the user’s autonomy and sense of control in the interaction?
+Does the chatbot support the user's autonomy and sense of control in the interaction?
 
 Output JSON:
-- result: "1 - strongly disagree" to "7 - strongly agree"
+- result: "1 - strongly disagree" to "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -135,7 +135,7 @@ Task:
 Does the chatbot break down information clearly and reduce cognitive overload?
 
 Output JSON:
-- result: "1 - strongly disagree" to "7 - strongly agree"
+- result: "1 - strongly disagree" to "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -156,9 +156,8 @@ Look for:
 
 Output JSON:
 - result: one of: 
-  "1 - strongly disagree", "2 - disagree", "3 - somewhat disagree", 
-  "4 - neither agree nor disagree", "5 - somewhat agree", 
-  "6 - agree", "7 - strongly agree"
+  "1 - strongly disagree", "2 - disagree", "3 - neutral", 
+  "4 - agree", "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -175,9 +174,8 @@ Does the response suggest that the chatbot response is visually appealing, pleas
 
 Output JSON:
 - result: one of: 
-  "1 - strongly disagree", "2 - disagree", "3 - somewhat disagree", 
-  "4 - neither agree nor disagree", "5 - somewhat agree", 
-  "6 - agree", "7 - strongly agree"
+  "1 - strongly disagree", "2 - disagree", "3 - neutral", 
+  "4 - agree", "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -194,9 +192,8 @@ Does the response reflect shared experience, values, or language that would make
 
 Output JSON:
 - result: one of: 
-  "1 - strongly disagree", "2 - disagree", "3 - somewhat disagree", 
-  "4 - neither agree nor disagree", "5 - somewhat agree", 
-  "6 - agree", "7 - strongly agree"
+  "1 - strongly disagree", "2 - disagree", "3 - neutral", 
+  "4 - agree", "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -213,9 +210,8 @@ Does the chatbot show understanding of the user's intent and take steps to help 
 
 Output JSON:
 - result: one of: 
-  "1 - strongly disagree", "2 - disagree", "3 - somewhat disagree", 
-  "4 - neither agree nor disagree", "5 - somewhat agree", 
-  "6 - agree", "7 - strongly agree"
+  "1 - strongly disagree", "2 - disagree", "3 - neutral", 
+  "4 - agree", "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -228,13 +224,12 @@ Context:
 - Chatbot Response: {generation}
 
 Task:
-Does the response show care, consistency, or respect for the user’s privacy, goals, or emotional needs?
+Does the response show care, consistency, or respect for the user's privacy, goals, or emotional needs?
 
 Output JSON:
 - result: one of: 
-  "1 - strongly disagree", "2 - disagree", "3 - somewhat disagree", 
-  "4 - neither agree nor disagree", "5 - somewhat agree", 
-  "6 - agree", "7 - strongly agree"
+  "1 - strongly disagree", "2 - disagree", "3 - neutral", 
+  "4 - agree", "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -251,9 +246,8 @@ Would a user say, "This made my task easier/faster/clearer"?
 
 Output JSON:
 - result: one of: 
-  "1 - strongly disagree", "2 - disagree", "3 - somewhat disagree", 
-  "4 - neither agree nor disagree", "5 - somewhat agree", 
-  "6 - agree", "7 - strongly agree"
+  "1 - strongly disagree", "2 - disagree", "3 - neutral", 
+  "4 - agree", "5 - strongly agree"
 - explanation: brief reason
 """
     ),
@@ -270,9 +264,8 @@ Does the response show that the chatbot is readily available, easy to find, and 
 
 Output JSON:
 - result: one of: 
-  "1 - strongly disagree", "2 - disagree", "3 - somewhat disagree", 
-  "4 - neither agree nor disagree", "5 - somewhat agree", 
-  "6 - agree", "7 - strongly agree"
+  "1 - strongly disagree", "2 - disagree", "3 - neutral", 
+  "4 - agree", "5 - strongly agree"
 - explanation: brief reason
 """
     ),
