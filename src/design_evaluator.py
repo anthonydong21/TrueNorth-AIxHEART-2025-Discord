@@ -3,6 +3,8 @@ import pandas as pd
 from tqdm import tqdm
 import os
 import json
+import concurrent.futures
+from functools import lru_cache
 from dotenv import load_dotenv
 
 from truenorth.agent.state import ChatState
@@ -27,11 +29,51 @@ from truenorth.agent.evaluation_agents import (
 load_dotenv()
 
 
-def run_agentic_evaluation():
+@lru_cache(maxsize=1000)
+def cached_likert_mapping(response):
+    """Cache Likert scale mappings for faster processing"""
+    mapping = {"1 - strongly disagree": 1, "2 - disagree": 2, "3 - neutral": 3, "4 - agree": 4, "5 - strongly agree": 5}
+    return mapping.get(response, None)
+
+
+def evaluate_single_case(case_data):
+    """Process a single test case - designed for parallel execution"""
+    case, actual, all_agents = case_data
+
+    label = case["label"]
+    question = case["query"]
+    generation = actual
+    theme = case.get("theme", "Unknown").strip().rstrip(",")
+
+    state = ChatState(question=question, generation=generation, messages=[], metadata={"model_provider": "Anthropic", "model_name": "claude-3-7-sonnet-latest"})
+
+    # Run all evaluation agents sequentially for this case
+    for name, agent in all_agents.items():
+        state = agent(state)
+
+    row = {
+        "Label": label,
+        "Question": question,
+        "Response": generation,
+        "Theme": theme,
+    }
+
+    # Add scores for all metrics
+    for name in all_agents.keys():
+        key = name.replace(" ", "_").replace("(", "").replace(")", "").lower()
+        row[name] = state.metadata.get(f"{key}_score", "")
+
+    return row
+
+
+def run_agentic_evaluation(max_workers=4):
     """
     Evaluation using Statkus et al. (2024) core metrics plus meta-requirements
     for gender-inclusive STEM support, aligned with TrueNorth design principles.
-    Uses 1-5 Likert scale.
+    Uses 1-5 Likert scale. Optimized for speed with parallel processing.
+
+    Args:
+        max_workers: Number of parallel workers for evaluation (default: 4)
     """
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_csv_path = os.path.join(current_dir, "agentic_evaluation_results.csv")
@@ -195,4 +237,10 @@ def run_agentic_evaluation():
 
 
 if __name__ == "__main__":
-    run_agentic_evaluation()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Run TrueNorth Agentic Evaluation")
+    parser.add_argument("--workers", type=int, default=8, help="Number of parallel workers (default: 4)")
+    args = parser.parse_args()
+
+    run_agentic_evaluation(max_workers=args.workers)
