@@ -91,24 +91,29 @@ Then go to your browser:
 This interface connects to the API and provides an interactive chatbot experience.
 
 ## 📐 4. Evaluation Workflows
-### ✅ Similarity Evaluation
+TrueNorth implements a comprehensive evaluation framework with 14 distinct metrics organized into two categories:
 
-Evaluate response quality using cosine similarity:
+### ✅ Core Design Principles (Statkus et al., 2024)
 
-`make test`
+onversational Agent Metrics:
 
-This runs chatbot responses and saves them to `answers_generated.json`.
-### ✅ Agentic Evaluation (DP1–DP3)
+- **Anthropomorphism** - Human-like interaction quality
+- **Attractivity** - Visual appeal and engagement
+- **Identification** - User relatability and connection
+- **Goal Facilitation** - Support for user objectives
+- **Trustworthiness** - Reliability and credibility
+- **Usefulness** - Practical value and helpfulness
+- **Accessibility** - Ease of access and interaction
 
-Measure 7 design criteria:
+✅ Meta-Requirements for Individualized STEM Support:
 
-- Anthropomorphism
-- Attractivity
-- Identification
-- Goal Facilitation
-- Trustworthiness
-- Perceived Usefulness
-- Accessibility
+- **MR1**: Gender-Conscious Engagement - Avoids stereotypes, fosters gender diversity respect
+- **MR2**: Empathic Intuition - Emotionally aware and naturally caring responses
+- **MR3**: Personal Visual Engagement - Personalized context and interactive elements
+- **MR4**: Credibility & Relatability - Reliable information delivered in relatable tone
+- **MR5**: Inclusive Community - Encourages belonging in diverse environments
+- **MR6**: User Agency - Empowers autonomous decision-making
+- **MR7**: Cognitive Simplicity - Reduces information processing complexity
 
 Run full evaluation:
 
