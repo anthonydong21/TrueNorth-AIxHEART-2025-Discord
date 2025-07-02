@@ -1,4 +1,5 @@
 # 💜 TrueNorth – PERMA+4 Enhanced Agentic RAG for Long-term Conversational Assistance and Retention Engagement
+![Figure 2](img/Figure2.png)
 
 TrueNorth is an AI-powered support assistant designed to empower early-career professionals pioneering the cutting-edge STEM industry. It provides a safe and anonymous space for mentorship, career guidance, emotional support, and navigating high-stakes workplace situations.
 
