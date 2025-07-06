@@ -21,7 +21,7 @@ TrueNorth is an AI-powered support assistant designed to empower early-career pr
 | Component    | Technology                              |
 |--------------|------------------------------------------|
 | LLM          | Google Gemini (via `langchain_google_genai`)|
-| Vector Store | Langchain FAISS Local Vector Store        |
+| Vector Store | PostgresDB or Langchain FAISS Local Vector Store        |
 | Embeddings   | GoogleGenerativeAIEmbeddings             |
 | Frontend     | Streamlit and FastAPI                    |
 | Web Search   | Tavily API                               |
