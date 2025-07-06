@@ -8,7 +8,7 @@ TrueNorth is an AI-powered support assistant designed to empower early-career pr
 
 - 🤖 **Conversational Agent** built with Google Gemini for empathetic and informative support  
 - 🔍 **Multi-query Retrieval-Augmented Generation (RAG)** with MMR and RRF for accurate answers  
-- 📚 **Custom Vector Database** using Langchain FAISS Local Vector Store to index curated resources and books  
+- 📚 **Custom Vector Database** using Postgres or Langchain FAISS Local Vector Store to index curated resources and books  
 - 🌐 **Tavily Web Search** integration for current, real-world information  
 - ✅ **Answer Verification** using hallucination and relevance grading  
 - 🧠 **Query Rewriting** for improving search coverage  
