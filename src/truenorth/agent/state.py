@@ -16,8 +16,12 @@ class ChatState(BaseModel):
     question: str
     original_question: str = None
     generation: str = None
+    
+    # NOTE: messages and documents are stored redundantly — they also live inside metadata variable
     messages: List[BaseMessage] = Field(default_factory=list)
     documents: List[Any] = Field(default_factory=list)
+
+    # Contains all information carried between agents
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
     max_retries : int = 2
@@ -30,6 +34,7 @@ class ChatState(BaseModel):
         return merge_dicts(self.metadata, other.metadata)
 
 
+# an old draft of this class
 # class ChatState(BaseModel):
 #     question: str
 #     metadata: Optional[Dict[str, Any]] = {}
