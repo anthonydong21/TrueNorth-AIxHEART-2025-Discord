@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  truenorth:
+    build: .
+    container_name: truenorth
+    env_file:
+      - .env
+    volumes:
+      - .:/app        # mount source code for dev
+      - faiss_data:/app/src/vector_store  # persist FAISS vector store
+    ports:
+      - "8000:8000"   # backend server port
+    command: poetry run uvicorn truenorth.app:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  faiss_data:
