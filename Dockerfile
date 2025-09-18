@@ -12,9 +12,9 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry install --no-interaction --no-ansi --no-root
+#RUN poetry install --no-interaction --no-ansi --no-root
 
 COPY . .
 
-CMD ["bash"]
+CMD ["/bin/bash"]
 #CMD ["poetry", "run","python", "main.py"]
