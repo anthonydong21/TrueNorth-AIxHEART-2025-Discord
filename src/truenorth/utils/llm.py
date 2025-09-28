@@ -192,7 +192,7 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
     llm = get_model(model_name, model_provider)
 
     logger.info(f"LLM model provider : {model_provider}")
-    logger.info(f"LLM model provider is Claude : {model_provider == "Anthropic"}")
+    logger.info(f"LLM model provider is Claude : {model_provider == 'Anthropic'}") # testing change due to terminal error
 
     if pydantic_model:
         if model_info and pydantic_model:
