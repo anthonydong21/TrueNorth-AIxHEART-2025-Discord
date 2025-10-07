@@ -3,7 +3,9 @@ import random
 import discord
 import google.generativeai as genai
 from dotenv import load_dotenv
+import requests
 
+API_URL = "http://localhost:8000/query"
 #connecting the bot
 from discord.ext import commands
 #loading the token and guild
@@ -53,12 +55,31 @@ async def joke(ctx):
         "What kind of mistakes do spooks make? ||Boo boos||",
         "What do you call a chicken at the north pole? ||Lost||",
         "What did the cashier say to the register? ||Im counting on you.||"
-
-
     ]
     response = random.choice(sillyquote)
     await ctx.send(response)
     await ctx.message.add_reaction('✅')
+#truenorth backend test
+@bot.command(name='askTrueNorth')
+async def ask_truenorth(ctx, *, question):
+    """Ask a question to TrueNorth"""
+    await ctx.send("Thinking...")
+
+    payload = {"question": question, "chat_history": []}
+
+    try:
+        response = requests.post(API_URL, json=payload)
+        response.raise_for_status()
+        data = response.json()
+        answer = data.get("response", "No response found")
+        await ctx.send(f"**Q:**{question}\n**A:**{answer}")
+        await ctx.message.add_reaction('✅')
+
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Error contacting backend: {e}")
+        await ctx.send("Sorry, I could not reach the TrueNorth API.")
+
+
 #help
 @bot.command(name='help')
 async def helpme(ctx):
