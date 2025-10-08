@@ -1,7 +1,7 @@
 import os
 import random
 import discord
-import google.generativeai as genai
+#import google.generativeai as genai
 from dotenv import load_dotenv
 import requests
 
@@ -13,8 +13,8 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('models/gemini-1.5-pro')
+#genai.configure(api_key=GEMINI_API_KEY)
+#model = genai.GenerativeModel('models/gemini-1.5-pro')
 
 
 intents = discord.Intents.default()
@@ -93,41 +93,54 @@ async def raise_exception(ctx):
 #GEMINI ADDITION
 @bot.command(name='geminiquestion')
 async def ask_gemini(ctx, *, question):
+    """Ask question to TrueNorth (rerouted from Gemini)"""
+    await ctx.send("Thinking with TrueNorth...")
+
+    payload = {"question": question, "chat_history": []}
+
     try:
-        safety_settings = [
-            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
-            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
-            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
-            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"}
-        ]
-        response = model.generate_content(question)
+        response = requests.post(API_URL, json=payload)
+        response.raise_for_status()
+        data = response.json()
+        answer = data.get("response", "No response found")
+
         max_length = 2000
-        answer = f"**Q:** {question}\n**A:** {response.text}"
-        if len(answer) > max_length:
-            answer = answer[:max_length - 3] + "..."
-        await ctx.send(answer)
+        msg = f"**Q:** {question}\n**A:** {answer}"
+        if len(msg) > max_length:
+            msg = msg[:max_length - 3] + "..."
+
+        await ctx.send(msg)
         await ctx.message.add_reaction('✅')
 
-    except Exception as e:
-        if "429" in str(e):
-            await ctx.send("Sorry, I have hit the limit.")
-        else:
-            await ctx.send("Please Try Again")
-            print(f"Error in geminiquestion command: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error contacting TrueNorth backend: {e}")
+        await ctx.send("Sorry, TrueNorth is not responding right now.")
+
         
-@bot.tree.command(name="geminiquestion", description="Ask Gemini anything")
+@bot.tree.command(name="geminiquestion", description="Ask TrueNorth anything")
 async def ask_slash(interaction: discord.Interaction, question: str):
+    """Slash command rerouted to TrueNorth"""
     await interaction.response.defer()
+    payload = {"question": question, "chat_history": []}
+
     try:
-        response = model.generate_content(question)
+        response = requests.post(API_URL, json=payload)
+        response.raise_for_status()
+        data = response.json()
+        answer = data.get("response", "No response found")
+
         max_length = 2000
-        answer = f"**Q:** {question}\n**A:** {response.text}"
-        if len(answer) > max_length:
-            answer = answer[:max_length - 3] + "..."
-        await interaction.followup.send(answer)
-    except Exception as e:
-        await interaction.followup.send("Something went wrong. Try again.")
-        print(f"Error in slash geminiquestion: {e}")
+        msg = f"**Q:** {question}\n**A:** {answer}"
+        if len(msg) > max_length:
+            msg = msg[:max_length - 3] + "..."
+
+        await interaction.followup.send(msg)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error contacting TrueNorth backend: {e}")
+        await interaction.followup.send("Sorry, TrueNorth is not responding right now.")
+
+
 @bot.event
 async def on_error(event, *args, **kwargs):
     with open('err.log', 'a') as f:
