@@ -5,7 +5,8 @@ import discord
 from dotenv import load_dotenv
 import requests
 
-API_URL = "http://truenorth:8000/query"
+API_HOST = os.getenv("API_HOST")
+API_URL = f"{API_HOST}/query"
 #connecting the bot
 from discord.ext import commands
 #loading the token and guild
