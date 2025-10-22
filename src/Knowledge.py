@@ -358,6 +358,12 @@ def main():
     except Exception as e:
         print(f"❌ Error building vector store: {e}")
 
-
+try:
+    embedding_model = get_embedding_model()
+    vector_store_dir = "/app/src/vector_store"
+    vector_store = build_vectorstore_incrementally([], embedding_model, vector_store_dir)
+except Exception as e:
+    print(f"⚠️ Failed to initialize vector store: {e}")
+    vector_store = None
 if __name__ == "__main__":
     main()
