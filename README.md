@@ -138,3 +138,28 @@ make ui             # Launch Streamlit frontend (http://localhost:8501)
 make test           # Run chatbot API tests using predefined test cases and similarity matric
 make eval           # Run evaluation metrics for features Anthropomorphism, Attractivity, Identification, Goal Facilitation, Trustworthiness, Usefulness, Accessibility
 ```
+
+# Docker Configuration
+
+Make sure to install Docker
+`https://docs.docker.com/desktop/setup/install/mac-install/`
+
+# Creating an env and docker-compose.yml
+
+Use the env.example and insert your keys!
+In order for the backend, TrueNorth and Discord to connect, we will need to create a docker-compose.yml and dockerfile for Python
+
+docker-compose.yml
+https://docs.docker.com/reference/compose-file/services/#volumes
+
+Dockerfile
+https://docs.docker.com/get-started/docker-concepts/building-images/writing-a-dockerfile/
+
+```
+When inside the TrueNorth folder,
+
+docker-compose build                #Build the docker image using the docker build command
+docker-compose up -d                #Reads the docker-compose.yml file
+docker-compose exec truenorth bash  #Run the interactive bash shell
+
+```
