@@ -3,7 +3,7 @@ import random
 import discord
 #import google.generativeai as genai
 from dotenv import load_dotenv
-from knowledge import vector_store
+from Knowledge import vector_store
 import requests
 
 API_HOST = os.getenv("API_HOST")
