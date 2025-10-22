@@ -3,11 +3,8 @@ import random
 import discord
 #import google.generativeai as genai
 from dotenv import load_dotenv
-from langchain_community.vectorstores import FAISS
+from knowledge import vector_store
 import requests
-
-vector_store_path = "./vector_store/truenorth_kb_vectorstore"
-vector_store = FAISS.load_local(vector_store_path, None, allow_dangerous_deserialization=True)
 
 API_HOST = os.getenv("API_HOST")
 API_URL = f"{API_HOST}/query"
@@ -67,28 +64,29 @@ async def joke(ctx):
 #truenorth backend test
 @bot.command(name='askTrueNorth')
 async def ask_truenorth(ctx, *, question):
-    """Ask a question to TrueNorth"""
+    """Ask a question: first check knowledge.py, then backend"""
     await ctx.send("Thinking...")
-#knowledge.py test/vector
+
+    # --- query local knowledge base ---
     docs = vector_store.similarity_search(question, k=5)
-    answer_text = "\n".join([doc.page_content for doc in docs])
+    if docs:
+        answer_text = "\n".join([doc.page_content for doc in docs])
+        await ctx.send(f"**Q:** {question}\n**A:** {answer_text}")
+        await ctx.message.add_reaction('✅')
+        return  # stop here if we found something locally
 
-    await ctx.send(f"**Q:** {question}\n**A:** {answer_text}")
-    await ctx.message.add_reaction('✅')
+    # --- fallback to TrueNorth backend ---
     payload = {"question": question, "chat_history": []}
-
     try:
         response = requests.post(API_URL, json=payload)
         response.raise_for_status()
         data = response.json()
         answer = data.get("response", "No response found")
-        await ctx.send(f"**Q:**{question}\n**A:**{answer}")
+        await ctx.send(f"**Q:** {question}\n**A:** {answer}")
         await ctx.message.add_reaction('✅')
-
     except requests.exceptions.RequestException as e:
         print(f"❌ Error contacting backend: {e}")
         await ctx.send("Sorry, I could not reach the TrueNorth API.")
-
 
 #help
 @bot.command(name='help')
