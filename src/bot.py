@@ -7,7 +7,7 @@ from langchain_community.vectorstores import FAISS
 import requests
 
 vector_store_path = "./vector_store/truenorth_kb_vectorstore"
-vector_store = FAISS.load_local(vector_store_path, None)
+vector_store = FAISS.load_local(vector_store_path, None, allow_dangerous_deserialization=True)
 
 API_HOST = os.getenv("API_HOST")
 API_URL = f"{API_HOST}/query"
