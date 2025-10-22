@@ -4,6 +4,8 @@ import discord
 #import google.generativeai as genai
 from dotenv import load_dotenv
 from Knowledge import vector_store
+from Knowledge import get_embedding_model, vector_store_dir
+from langchain_community.vectorstores import FAISS
 import requests
 
 API_HOST = os.getenv("API_HOST")
@@ -64,6 +66,20 @@ async def joke(ctx):
 #truenorth backend test
 @bot.command(name='askTrueNorth')
 async def ask_truenorth(ctx, *, question):
+    global vector_store
+    if vector_store is None:
+        embedding_model = get_embedding_model()
+        try:
+            vector_store = FAISS.load_local(
+                f"{vector_store_dir}/truenorth_kb_vectorstore",
+                embedding_model,
+                allow_dangerous_deserialization=True
+            )
+            print("✅ Loaded vector store for bot")
+        except Exception as e:
+            print(f"❌ Failed to load vector store: {e}")
+            await ctx.send("⚠️ Vector store not available. Please build it first.")
+            return
     """Ask a question: first check knowledge.py, then backend"""
     await ctx.send("Thinking...")
 
