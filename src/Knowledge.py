@@ -29,7 +29,9 @@ log_filename = os.path.join(current_script_dir, f"cleaning_{datetime.now().strft
 logging.basicConfig(filename=log_filename, filemode="a", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Define the directory containing the books
-BOOKS_DIR = os.path.join(os.path.dirname(__file__), "books_pdf")
+#BOOKS_DIR = os.path.join(os.path.dirname(__file__), "books_pdf")
+#docker edit for path
+BOOKS_DIR = "/app/src/books_pdf"
 
 # Define supported file extensions
 SUPPORTED_EXTENSIONS = {".pdf", ".epub", ".txt"}
@@ -268,7 +270,9 @@ def main():
         return
 
     # Set up vector store directory
-    vector_store_dir = os.path.join(os.path.dirname(__file__), "vector_store")
+    #edit for docker 
+    vector_store_dir = "/app/src/vector_store"
+    #vector_store_dir = os.path.join(os.path.dirname(__file__), "vector_store")
 
     book_files = [os.path.join(BOOKS_DIR, f) for f in os.listdir(BOOKS_DIR) if os.path.splitext(f)[1].lower() in SUPPORTED_EXTENSIONS]
 
