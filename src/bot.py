@@ -3,7 +3,13 @@ import random
 import discord
 #import google.generativeai as genai
 from dotenv import load_dotenv
+from langchain.vectorstores import FAISS
+from langchain.embeddings import OpenAIEmbeddings 
 import requests
+
+vector_store_path = "./vector_store/truenorth_kb_vectorstore"
+embeddings = OpenAIEmbeddings() 
+vector_store = FAISS.load_local(vector_store_path, embeddings)
 
 API_HOST = os.getenv("API_HOST")
 API_URL = f"{API_HOST}/query"
@@ -65,7 +71,12 @@ async def joke(ctx):
 async def ask_truenorth(ctx, *, question):
     """Ask a question to TrueNorth"""
     await ctx.send("Thinking...")
+#knowledge.py test/vector
+    docs = vector_store.similarity_search(question, k=5)
+    answer_text = "\n".join([doc.page_content for doc in docs])
 
+    await ctx.send(f"**Q:** {question}\n**A:** {answer_text}")
+    await ctx.message.add_reaction('✅')
     payload = {"question": question, "chat_history": []}
 
     try:
