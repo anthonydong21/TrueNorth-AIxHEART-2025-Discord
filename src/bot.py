@@ -87,7 +87,11 @@ async def ask_truenorth(ctx, *, question):
     docs = vector_store.similarity_search(question, k=5)
     if docs:
         answer_text = "\n".join([doc.page_content for doc in docs])
-        await ctx.send(f"**Q:** {question}\n**A:** {answer_text}")
+        msg = f"**Q:** {question}\n**A:** {answer_text}"
+        if len(msg) > 2000: #discord word limit test
+            msg = msg[:1997] + "..."
+        await ctx.send(msg)
+
         await ctx.message.add_reaction('✅')
         return  # stop here if we found something locally
 
