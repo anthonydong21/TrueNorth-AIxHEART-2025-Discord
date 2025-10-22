@@ -4,11 +4,9 @@ import discord
 #import google.generativeai as genai
 from dotenv import load_dotenv
 from langchain.vectorstores import FAISS
-from langchain.embeddings import OpenAIEmbeddings 
 import requests
 
 vector_store_path = "./vector_store/truenorth_kb_vectorstore"
-embeddings = OpenAIEmbeddings() 
 vector_store = FAISS.load_local(vector_store_path, embeddings)
 
 API_HOST = os.getenv("API_HOST")
