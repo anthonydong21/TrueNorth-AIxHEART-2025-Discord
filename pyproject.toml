@@ -41,6 +41,7 @@ seaborn = "^0.13.2"
 faiss-cpu = "^1.11.0"
 torch = {version = "^2.8.0", source = "pytorch-cpu"}
 torchvision = {version = "^0.23.0", source = "pytorch-cpu"}
+discord-py = "^2.6.4"
 
 [[tool.poetry.source]]
 name = "pytorch-cpu"
