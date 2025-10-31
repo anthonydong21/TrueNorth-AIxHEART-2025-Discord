@@ -73,7 +73,11 @@ async def ask_truenorth(ctx, *, question):
         response.raise_for_status()
         data = response.json()
         answer = data.get("response", "No response found")
-        await ctx.send(f"**Q:**{question}\n**A:**{answer}")
+
+        MAX_LEN = 1900
+        full_message = f"**Q:** {question}\n**A:** {answer}"
+        for i in range(0, len(full_message), MAX_LEN):
+            await ctx.send(full_message[i:i+MAX_LEN])
         await ctx.message.add_reaction('✅')
 
     except requests.exceptions.RequestException as e:
@@ -105,12 +109,10 @@ async def ask_gemini(ctx, *, question):
         data = response.json()
         answer = data.get("response", "No response found")
 
-        max_length = 2000
-        msg = f"**Q:** {question}\n**A:** {answer}"
-        if len(msg) > max_length:
-            msg = msg[:max_length - 3] + "..."
-
-        await ctx.send(msg)
+        MAX_LEN = 1900
+        full_message = f"**Q:** {question}\n**A:** {answer}"
+        for i in range(0, len(full_message), MAX_LEN):
+            await ctx.send(full_message[i:i+MAX_LEN])
         await ctx.message.add_reaction('✅')
 
     except requests.exceptions.RequestException as e:
@@ -130,12 +132,10 @@ async def ask_slash(interaction: discord.Interaction, question: str):
         data = response.json()
         answer = data.get("response", "No response found")
 
-        max_length = 2000
-        msg = f"**Q:** {question}\n**A:** {answer}"
-        if len(msg) > max_length:
-            msg = msg[:max_length - 3] + "..."
-
-        await interaction.followup.send(msg)
+        MAX_LEN = 1900
+        full_message = f"**Q:** {question}\n**A:** {answer}"
+        for i in range(0, len(full_message), MAX_LEN):
+            await interaction.followup.send(full_message[i:i+MAX_LEN])
 
     except requests.exceptions.RequestException as e:
         print(f"Error contacting TrueNorth backend: {e}")
