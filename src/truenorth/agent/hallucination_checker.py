@@ -25,6 +25,7 @@ def check_hallucination(state: ChatState) -> ChatState:
         return state
 
     # ✅ NEW: Check links
+    ''' testing to move broken link checker elsewhere
     urls = re.findall(r'(https?://\S+)', generation)
     invalid_links = []
 
@@ -47,3 +48,4 @@ def check_hallucination(state: ChatState) -> ChatState:
     state.metadata["hallucination_check_result"] = "pass"
     state.metadata["evaluator_reason"] = "grounded"
     return state
+'''
