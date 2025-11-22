@@ -198,7 +198,7 @@ def retrieve_documents(state: ChatState) -> ChatState:
                 logger.error(f"Code: {line_content}")
                 
         # Continue with empty documents rather than failing completely
-
+        pass
     return state
 
 
