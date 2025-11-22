@@ -180,7 +180,7 @@ def retrieve_documents(state: ChatState) -> ChatState:
         state.documents.extend(formatted_doc_results)
         logger.info(f"✅ Added {len(formatted_doc_results)} documents to state")
 
-except Exception as e:
+    except Exception as e:
         logger.error(f"❌ Error during document retrieval: {e}")
         
         # Get detailed traceback info
