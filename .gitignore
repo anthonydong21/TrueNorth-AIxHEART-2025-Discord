@@ -1,9 +1,9 @@
 *~
 .env
 __pycache__
-books_pdf/*
+src/books_pdf/*
 vector_store*
 .DS_Store
 .logs
 *.log
-truenorth-vertex-ai-key.json
+truenorth-*.json
