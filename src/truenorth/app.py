@@ -17,13 +17,16 @@ os.makedirs(log_dir, exist_ok=True)
 logger = logging.getLogger("server")
 logger.setLevel(logging.INFO)
 if not logger.hasHandlers():
-    console = logging.StreamHandler()
-    log_file = logging.FileHandler(os.path.join(log_dir, "server.log"))
     formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+    
+    console = logging.StreamHandler()
     console.setFormatter(formatter)
-    log_file.setFormatter(formatter)
     logger.addHandler(console)
-    logger.addHandler(log_file)
+
+    if os.getenv("LOG_TO_FILE", "true").lower() == "true":
+        log_file = logging.FileHandler(os.path.join(log_dir, "server.log"))
+        log_file.setFormatter(formatter)
+        logger.addHandler(log_file)
 
 # === FastAPI App ===
 app = FastAPI()

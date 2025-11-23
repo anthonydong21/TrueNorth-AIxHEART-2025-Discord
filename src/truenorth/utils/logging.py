@@ -4,7 +4,6 @@ import inspect
 import sys
 
 
-@staticmethod
 def get_caller_logger(to_stdout: bool = True) -> logging.Logger:
     caller_frame = inspect.stack()[1]
     module = inspect.getmodule(caller_frame[0])
@@ -23,9 +22,10 @@ def get_caller_logger(to_stdout: bool = True) -> logging.Logger:
     # Prevent adding duplicate handlers
     if not logger.handlers:
         # File handler
-        file_handler = logging.FileHandler(log_file, mode="a")
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        if os.getenv("LOG_TO_FILE", "true").lower() == "true":
+            file_handler = logging.FileHandler(log_file, mode="a")
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
 
         # Optional stdout handler
         if to_stdout:
