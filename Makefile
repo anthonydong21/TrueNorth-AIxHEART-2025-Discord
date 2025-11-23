@@ -22,6 +22,12 @@ install:
 embed:
 	$(PYTHON) src/Knowledge.py
 
+demo-embed:
+	docker compose -f docker-compose.demo.yml run --rm demo-backend poetry run python src/Knowledge.py
+
+demo-up:
+	docker compose -f docker-compose.demo.yml up -d --build --remove-orphans
+
 api:
 	poetry run uvicorn truenorth.app:app --reload
 
