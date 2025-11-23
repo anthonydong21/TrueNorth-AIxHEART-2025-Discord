@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  demo-backend:
+    build: .
+    container_name: truenorth-demo-backend
+    env_file:
+      - .env
+    environment:
+      - DEMO_MODE=true
+      - DEMO_MESSAGE_LIMIT=3
+      - LOG_TO_FILE=true
+    volumes:
+      - .:/app        # mount source code for dev
+      - ./src/books_pdf:/app/src/books_pdf # pdf book test
+    expose:
+      - "8000"        # Expose to internal docker network only
+    stdin_open: true
+    tty: true
+    command: bash -c "PYTHONPATH=./src poetry run uvicorn truenorth.app:app --host 0.0.0.0 --port 8000"
+
+  discord-bot:
+    build: .
+    container_name: truenorth-discord-bot
+    env_file:
+      - .env
+    environment:
+      - API_HOST=http://demo-backend:8000
+      - LOG_TO_FILE=true
+    volumes:
+      - .:/app
+    command: bash -c "poetry run python src/bot.py"
+    depends_on:
+      - demo-backend
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
