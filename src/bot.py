@@ -4,7 +4,7 @@ import discord
 #import google.generativeai as genai
 from dotenv import load_dotenv
 import requests
-
+import re
 API_HOST = os.getenv("API_HOST")
 API_URL = f"{API_HOST}/query"
 #connecting the bot
@@ -17,6 +17,35 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 #genai.configure(api_key=GEMINI_API_KEY)
 #model = genai.GenerativeModel('models/gemini-1.5-pro')
 
+MAX_LEN = 1900 #for discord message limit
+def looks_like_link(word):
+    return (
+        word.startswith("http://")
+        or word.startswith("https://")
+        or word.startswith("www.")
+        or ("." in word and " " not in word)
+    )
+
+async def send_safe(sender, text, MAX_LEN):#should work with ctx and interaction.followup
+    send = sender.send
+    words = text.split(" ")
+    current = ""
+    for w in words:
+        if looks_like_link(w):
+            if current.strip():
+                await send(current)
+                current = ""
+            await send(w)
+            continue
+
+        if len(current) + len(w) + 1 > MAX_LEN:
+            await send(current)
+            current = w + " "
+        else:
+            current += w + " "
+
+    if current.strip():
+        await send(current)
 
 intents = discord.Intents.default()
 intents.message_content = True  
@@ -74,10 +103,8 @@ async def ask_truenorth(ctx, *, question):
         data = response.json()
         answer = data.get("response", "No response found")
 
-        MAX_LEN = 1900
         full_message = f"**Q:** {question}\n**A:** {answer}"
-        for i in range(0, len(full_message), MAX_LEN):
-            await ctx.send(full_message[i:i+MAX_LEN])
+        await send_safe(ctx, full_message, MAX_LEN)
         await ctx.message.add_reaction('✅')
 
     except requests.exceptions.RequestException as e:
@@ -109,10 +136,8 @@ async def ask_gemini(ctx, *, question):
         data = response.json()
         answer = data.get("response", "No response found")
 
-        MAX_LEN = 1900
         full_message = f"**Q:** {question}\n**A:** {answer}"
-        for i in range(0, len(full_message), MAX_LEN):
-            await ctx.send(full_message[i:i+MAX_LEN])
+        await send_safe(ctx, full_message, MAX_LEN)
         await ctx.message.add_reaction('✅')
 
     except requests.exceptions.RequestException as e:
@@ -132,10 +157,8 @@ async def ask_slash(interaction: discord.Interaction, question: str):
         data = response.json()
         answer = data.get("response", "No response found")
 
-        MAX_LEN = 1900
         full_message = f"**Q:** {question}\n**A:** {answer}"
-        for i in range(0, len(full_message), MAX_LEN):
-            await interaction.followup.send(full_message[i:i+MAX_LEN])
+        await send_safe(interaction.followup, full_message, MAX_LEN)
 
     except requests.exceptions.RequestException as e:
         print(f"Error contacting TrueNorth backend: {e}")
