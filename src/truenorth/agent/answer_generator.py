@@ -19,60 +19,77 @@ def create_citation_context(documents):
         documents: List of Document objects with metadata
 
     Returns:
-        tuple: (context_string, references_dict) where references_dict maps source numbers to full citations with quotes
+        tuple: (source_summary, formatted_context, references_dict)
     """
     if not documents:
-        return "", {}
+        return "", "", {}
 
-    sources = []
+    sources_summary = []
+    formatted_context = []
     references_dict = {}
     source_num = 1
 
-    # Create individual numbered citations for each document instead of grouping
     for doc in documents:
         metadata = doc.metadata if hasattr(doc, "metadata") else doc.get("metadata", {})
         page_content = doc.page_content if hasattr(doc, "page_content") else doc.get("page_content", "")
 
-        # Create source identifier
-        if "author" in metadata and "title" in metadata:
-            # Book/PDF source
-            author = metadata.get("author", "Unknown Author")
-            title = metadata.get("title", "Unknown Title")
-            year = metadata.get("creationdate", "")[:4] if metadata.get("creationdate") else "n.d."
-            file_path = metadata.get("file_path", metadata.get("source", ""))
-            page = metadata.get("page", metadata.get("page_number", metadata.get("page_num", "Unknown")))
+        # Clean page content
+        page_content = page_content.strip()
 
-            # Create a short citation for the context
-            sources.append(f"[{source_num}] {author} ({year}) - {title}, p. {page}")
+        # Helper to safely get and clean metadata
+        def get_clean_meta(key, default=""):
+            val = metadata.get(key)
+            if val is None:
+                return default
+            # Remove BOM and strip whitespace
+            return str(val).replace("\ufeff", "").strip() or default
 
-            # Extract meaningful quote (first 100 characters of content, cleaning up formatting)
-            meaningful_quote = page_content.strip().replace("\n", " ").replace("###", "").replace("##", "")
-            meaningful_quote = meaningful_quote[:100] + "..." if len(meaningful_quote) > 100 else meaningful_quote
+        # Extract metadata with fallbacks
+        author = get_clean_meta("author", "Unknown Author")
+        title = get_clean_meta("title", "Unknown Title")
+        year = get_clean_meta("creationdate", "n.d.")[:4]
+        file_path = get_clean_meta("file_path", get_clean_meta("source", ""))
+        page = get_clean_meta("page", get_clean_meta("page_number", get_clean_meta("page_num", "")))
+        url = get_clean_meta("url", "")
 
-            # Create full citation for references
-            citation = f"{author} ({year}). [{title}](file://{file_path}#{page})"
-            citation += f'\n    > "{meaningful_quote}"'
-            references_dict[source_num] = citation
-#getting a change for fixing the potential double link
-        elif "url" in metadata:
-            # Web source
-            url = metadata.get("url", "")
-            title = metadata.get("title") or "Title N/A"
+        # Determine if it's a web source or file source
+        is_web = "url" in metadata or url
 
-            if title == "Title N/A":
-                sources.append(f"[{source_num}]{url}")
+        citation_display = ""
+
+        if is_web:
+            if title == "Unknown Title":
+                citation_display = url
             else:
-                sources.append(f"[{source_num}] {title}")
+                citation_display = title
 
-            meaningful_quote = page_content.strip()[:100] + "..." if len(page_content.strip()) > 100 else page_content.strip()
-            citation = f"[{title}]({url})" if title != "Title N/A" else f"{url}"
-            citation += f'\n    > "{meaningful_quote}"'
-            references_dict[source_num] = citation
+            # Create summary entry
+            sources_summary.append(f"[{source_num}] {citation_display}")
+
+            # Create full citation for references dict (internal use)
+            citation_link = f"[{title}]({url})" if title != "Unknown Title" else f"{url}"
+            references_dict[source_num] = f"{citation_link}"
+
+        else:
+            # Book/PDF source
+            citation_display = f"{author} ({year}) - {title}"
+            if page:
+                citation_display += f", p. {page}"
+
+            # Create summary entry
+            sources_summary.append(f"[{source_num}] {citation_display}")
+
+            # Create full citation for references dict (internal use)
+            citation_link = f"{author} ({year}). [{title}](file://{file_path}#{page})"
+            references_dict[source_num] = citation_link
+
+        # Add to formatted context for the LLM
+        # This explicitly links the Source ID to the Content
+        formatted_context.append(f"Source [{source_num}]:\nMetadata: {citation_display}\nContent: {page_content}\n")
 
         source_num += 1
 
-    context_string = "\n".join(sources)
-    return context_string, references_dict
+    return "\n".join(sources_summary), "\n---\n".join(formatted_context), references_dict
 
 
 def format_references_from_dict(references_dict):
@@ -190,10 +207,10 @@ def answer_generator(state):
     documents = [Document(metadata=doc["metadata"], page_content=doc["page_content"]) if isinstance(doc, dict) else doc for doc in documents]
 
     # Create citation context and references mapping
-    source_context, references_dict = create_citation_context(documents)
+    source_context, formatted_context, references_dict = create_citation_context(documents)
 
     # Format the prompt for the answer generator
-    prompt = answer_generator_prompt_template.format(current_datetime=current_datetime, context=documents, question=question, goals_as_str=goals_as_str, source_context=source_context)
+    prompt = answer_generator_prompt_template.format(current_datetime=current_datetime, context=formatted_context, question=question, goals_as_str=goals_as_str, source_context=source_context)
 
     logger.info(f"Answer generator prompt: {prompt}")
     response = call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=None, agent_name="answer_generator_agent")
