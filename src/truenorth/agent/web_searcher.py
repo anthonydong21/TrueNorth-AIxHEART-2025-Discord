@@ -1,3 +1,4 @@
+import requests #url checker
 import os
 from colorama import Fore, Style
 from langchain_core.documents import Document
@@ -8,6 +9,15 @@ from truenorth.utils.logging import get_caller_logger
 from truenorth.utils.cleaner import clean_documents
 
 from dotenv import load_dotenv
+
+
+def validateURL(url: str) -> bool:
+    try:
+        r = requests.head(url, allow_redirects=True, timeout = 5) #5 seconds for a response for website
+        return r.status_code < 400
+    except:
+        return False
+    
 
 load_dotenv()
 tavily_api_key = os.getenv("TAVILY_API_KEY")
@@ -36,7 +46,18 @@ def search_web(state: ChatState) -> ChatState:
     web_results = web_search_tool.invoke(question)
 
     documents = [Document(metadata=dict(url=doc["url"], title=doc["title"]), page_content=doc["content"]) if isinstance(doc, dict) else doc for doc in web_results]
+
     documents, stats = clean_documents(documents, verbose=True)
+
+    WorkingDocs = []
+    for doc in documents:
+        url = doc.metadata.get("url")
+        if url and validateURL(url):
+            WorkingDocs.append(doc)
+        else:
+            logger.warning(f"[web_searcher] Invalid URL: {url}")
+
+    documents = WorkingDocs
 
     state.documents.extend(documents)
 

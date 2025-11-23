@@ -182,8 +182,23 @@ def retrieve_documents(state: ChatState) -> ChatState:
 
     except Exception as e:
         logger.error(f"❌ Error during document retrieval: {e}")
+        
+        # Get detailed traceback info
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        if exc_traceback:
+            # Extract the last frame (where the error occurred)
+            tb = traceback.extract_tb(exc_traceback)
+            if tb:
+                last_call = tb[-1]
+                filename = last_call.filename
+                line_number = last_call.lineno
+                line_content = last_call.line
+                
+                logger.error(f"Location: {filename}, line {line_number}")
+                logger.error(f"Code: {line_content}")
+                
         # Continue with empty documents rather than failing completely
-
+        pass
     return state
 
 

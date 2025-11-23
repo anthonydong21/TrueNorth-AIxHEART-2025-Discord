@@ -53,16 +53,19 @@ def create_citation_context(documents):
             citation = f"{author} ({year}). [{title}](file://{file_path}#{page})"
             citation += f'\n    > "{meaningful_quote}"'
             references_dict[source_num] = citation
-
+#getting a change for fixing the potential double link
         elif "url" in metadata:
             # Web source
             url = metadata.get("url", "")
-            title = metadata.get("title", "Web Page")
+            title = metadata.get("title") or "Title N/A"
 
-            sources.append(f"[{source_num}] {title}")
+            if title == "Title N/A":
+                sources.append(f"[{source_num}]{url}")
+            else:
+                sources.append(f"[{source_num}] {title}")
 
             meaningful_quote = page_content.strip()[:100] + "..." if len(page_content.strip()) > 100 else page_content.strip()
-            citation = f"[{title}]({url})"
+            citation = f"[{title}]({url})" if title != "Title N/A" else f"{url}"
             citation += f'\n    > "{meaningful_quote}"'
             references_dict[source_num] = citation
 

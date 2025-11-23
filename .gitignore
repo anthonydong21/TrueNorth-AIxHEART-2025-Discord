@@ -1,6 +1,7 @@
+*~
 .env
 __pycache__
-books_pdf*
+books_pdf/*
 vector_store*
 .DS_Store
 .logs

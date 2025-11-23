@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  truenorth:
+    build: .
+    container_name: truenorth
+    env_file:
+      - .env
+    volumes:
+      - .:/app        # mount source code for dev
+      - faiss_data:/app/src/vector_store  # persist FAISS vector store
+      - ./src/books_pdf:/app/src/books_pdf # pdf book test
+    ports:
+      - "8000:8000"   # backend server port
+    stdin_open: true
+    tty: true
+volumes:
+  faiss_data:
