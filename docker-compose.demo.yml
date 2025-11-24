@@ -19,19 +19,19 @@ services:
     tty: true
     command: bash -c "PYTHONPATH=./src poetry run uvicorn truenorth.app:app --host 0.0.0.0 --port 8000"
 
-  discord-bot:
-    build: .
-    container_name: truenorth-discord-bot
-    env_file:
-      - .env
-    environment:
-      - API_HOST=http://demo-backend:8000
-      - LOG_TO_FILE=true
-    volumes:
-      - .:/app
-    command: bash -c "poetry run python src/bot.py"
-    depends_on:
-      - demo-backend
+#  discord-bot:
+#    build: .
+#    container_name: truenorth-discord-bot
+#    env_file:
+#      - .env
+#    environment:
+#      - API_HOST=http://demo-backend:8000
+#      - LOG_TO_FILE=true
+#    volumes:
+#      - .:/app
+#    command: bash -c "poetry run python src/bot.py"
+#    depends_on:
+#      - demo-backend
 
   caddy:
     image: caddy:2

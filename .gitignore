@@ -7,3 +7,6 @@ vector_store*
 .logs
 *.log
 truenorth-*.json
+*.db
+rate_limits.db
+src/rate_limits.dbsync_vectorstore.sh

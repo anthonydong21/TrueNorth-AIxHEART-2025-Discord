@@ -9,6 +9,8 @@ help:
 	@echo "TrueNorth Makefile Commands:"
 	@echo "  install  - Install dependencies"
 	@echo "  embed    - Preprocess and embed PDFs into vector DB"
+	@echo "  demo-up  - Start demo services with Docker"
+	@echo "  demo-down - Stop demo services with Docker"
 	@echo "  api      - Run FastAPI server locally"
 	@echo "  ui       - Run Streamlit frontend locally"
 	@echo "  test     - Run similarity evaluator and tests"
@@ -28,8 +30,11 @@ demo-embed:
 demo-up:
 	docker compose -f docker-compose.demo.yml up -d --build --remove-orphans
 
+demo-down:
+	docker compose -f docker-compose.demo.yml down
+
 api:
-	poetry run uvicorn truenorth.app:app --reload
+	PYTHONPATH=./src poetry run uvicorn truenorth.app:app --host 0.0.0.0 --port 8000 --reload
 
 ui:
 	poetry run streamlit run src/streamlit_ui.py
