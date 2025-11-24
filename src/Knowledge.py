@@ -2,7 +2,7 @@
 import os
 import logging
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import multiprocessing
 from functools import partial
@@ -10,6 +10,7 @@ import time
 
 from dotenv import load_dotenv
 from tqdm import tqdm
+import bibtexparser
 
 from langchain_core.documents import Document
 from langchain_text_splitters import MarkdownHeaderTextSplitter
@@ -49,6 +50,59 @@ CHUNK_SIZE = 800
 # NEW: Test run flag
 TEST_RUN = os.getenv("TEST_RUN", "False").lower() == "true"
 TEST_FILE_NAME = os.getenv("TEST_FILE_NAME", None)  # Optional: specific file for test run
+
+
+def parse_bibtex_metadata(bib_path: str) -> Dict[str, Dict[str, str]]:
+    """
+    Parse a BibTeX file and return a dict mapping PDF filenames to their metadata.
+    Uses bibtexparser library for robust parsing.
+
+    Args:
+        bib_path: Path to the BibTeX file
+
+    Returns:
+        Dictionary mapping PDF filenames to their metadata fields
+    """
+    metadata_by_file = {}
+    if not os.path.exists(bib_path):
+        return metadata_by_file
+
+    try:
+        with open(bib_path, "r", encoding="utf-8") as bib_file:
+            # Parse BibTeX file using bibtexparser
+            bib_database = bibtexparser.load(bib_file)
+
+            # Iterate through all entries
+            for entry in bib_database.entries:
+                # Get the file field (PDF filename)
+                file_field = entry.get("file", "").strip()
+                if not file_field:
+                    continue
+
+                # Extract just the filename if it includes path information
+                # BibTeX file field can be like: "path/to/file.pdf:PDF"
+                pdf_file = file_field.split(":")[0].strip()
+                # Remove any path components, just get the filename
+                pdf_file = os.path.basename(pdf_file)
+
+                # Store all fields for this entry
+                metadata_by_file[pdf_file] = entry
+
+    except Exception as e:
+        logging.error(f"Failed to parse BibTeX file {bib_path}: {e}")
+        return metadata_by_file
+
+    return metadata_by_file
+
+
+def get_pdf_metadata(pdf_filename, bib_path=None):
+    """
+    Get metadata for a given PDF filename from references.bib.
+    """
+    if bib_path is None:
+        bib_path = os.path.join(os.path.dirname(__file__), "books_pdf", "references.bib")
+    metadata_map = parse_bibtex_metadata(bib_path)
+    return metadata_map.get(pdf_filename, {})
 
 
 def get_embedding_model():
@@ -97,6 +151,9 @@ def load_and_clean_file_fast(filepath: str) -> List[Document]:
         # Streamlined cleaning with less aggressive filtering
         if docs:
             cleaned_docs, _ = clean_pdf_documents(docs, min_content_length=50, verbose=False)
+            # Get BibTeX metadata for this file
+            bib_metadata = get_pdf_metadata(filename)
+
             # Add filename and ensure page numbers are preserved
             for doc in cleaned_docs:
                 doc.metadata["filename"] = filename
@@ -104,6 +161,25 @@ def load_and_clean_file_fast(filepath: str) -> List[Document]:
                 # Ensure page number exists
                 if "page" not in doc.metadata:
                     doc.metadata["page"] = 1
+
+                # Enrich with BibTeX metadata if available
+                if bib_metadata:
+                    # Add author (handle both single author and multiple authors)
+                    if "author" in bib_metadata:
+                        doc.metadata["author"] = bib_metadata["author"]
+                    # Add title
+                    if "title" in bib_metadata:
+                        doc.metadata["title"] = bib_metadata["title"]
+                    # Add year
+                    if "year" in bib_metadata:
+                        doc.metadata["year"] = bib_metadata["year"]
+                    # Add publisher/journal for context
+                    if "publisher" in bib_metadata:
+                        doc.metadata["publisher"] = bib_metadata["publisher"]
+                    elif "journal" in bib_metadata:
+                        doc.metadata["journal"] = bib_metadata["journal"]
+                    elif "institution" in bib_metadata:
+                        doc.metadata["institution"] = bib_metadata["institution"]
             return cleaned_docs
         return []
 
@@ -270,7 +346,29 @@ def main():
     # Set up vector store directory
     vector_store_dir = os.path.join(os.path.dirname(__file__), "vector_store")
 
-    book_files = [os.path.join(BOOKS_DIR, f) for f in os.listdir(BOOKS_DIR) if os.path.splitext(f)[1].lower() in SUPPORTED_EXTENSIONS]
+    # Get all files in directory
+    all_files = [os.path.join(BOOKS_DIR, f) for f in os.listdir(BOOKS_DIR) if os.path.splitext(f)[1].lower() in SUPPORTED_EXTENSIONS]
+
+    # Load BibTeX metadata to get list of files that should be processed
+    bib_path = os.path.join(BOOKS_DIR, "references.bib")
+    bib_metadata = parse_bibtex_metadata(bib_path)
+    bib_filenames = set(bib_metadata.keys())
+
+    # Filter to only include files mentioned in references.bib
+    book_files = []
+    skipped_files = []
+    for file_path in all_files:
+        filename = os.path.basename(file_path)
+        if filename in bib_filenames:
+            book_files.append(file_path)
+        else:
+            skipped_files.append(filename)
+
+    if skipped_files:
+        print(f"⚠️  Skipping {len(skipped_files)} file(s) not in references.bib:")
+        for f in sorted(skipped_files):
+            print(f"   - {f}")
+        print()
 
     if not book_files:
         logging.info("No supported book files found to process.")

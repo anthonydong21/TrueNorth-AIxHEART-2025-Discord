@@ -9,4 +9,4 @@ vector_store*
 truenorth-*.json
 *.db
 rate_limits.db
-src/rate_limits.dbsync_vectorstore.sh
+src/rate_limits.db
