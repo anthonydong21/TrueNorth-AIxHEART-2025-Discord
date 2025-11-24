@@ -25,24 +25,28 @@ def looks_like_link(word):
         or word.startswith("www.")
     )
 
-async def send_safe(sender, text, MAX_LEN):#should work with ctx and interaction.followup
+async def send_safe(sender, text, MAX_LEN):
     send = sender.send
-    words = text.replace("\n", " \n ").split(" ")
     current = ""
+
+    words = text.split(" ")
+
     for w in words:
+        w = w.strip()
         if looks_like_link(w):
             if current.strip():
                 await send(current)
                 current = ""
-            await send(w)
+            await send(w) 
             continue
-
         if len(current) + len(w) + 1 > MAX_LEN:
             await send(current)
-            current = w + " "
+            current = w
         else:
-            current += w + " "
-
+            if current:
+                current += " " + w
+            else:
+                current = w
     if current.strip():
         await send(current)
 
