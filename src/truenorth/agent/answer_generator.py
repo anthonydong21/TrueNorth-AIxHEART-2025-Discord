@@ -1,4 +1,5 @@
 import time
+import os
 from datetime import datetime
 from typing import List, Optional
 from langchain_core.prompts import PromptTemplate
@@ -10,6 +11,9 @@ from truenorth.utils.logging import get_caller_logger
 from truenorth.utils.metaprompt import goals_as_str, system_relevant_scope
 
 logger = get_caller_logger()
+
+# Get API base URL from environment, default to production
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.mytruenorth.app")
 
 
 class CitedSource(BaseModel):
@@ -103,7 +107,7 @@ def create_citation_context(documents):
                 citation_display += f", p. {page}"
 
             filename = file_path.split("/")[-1] if file_path else ""
-            api_url = f"https://mytruenorth.app/api/pdf/{filename}/pages?page={page}"
+            api_url = f"{API_BASE_URL}/api/pdf/{filename}/pages?page={page}"
             citation_link = f"{author} ({year}). [{title}]({api_url})"
 
             sources_summary.append(f"[{source_num}] {citation_display}")

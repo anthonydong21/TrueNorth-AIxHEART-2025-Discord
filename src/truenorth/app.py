@@ -16,6 +16,9 @@ from truenorth.graph import build_rag_graph, save_graph_as_png
 from truenorth.api.routes import pdf
 from truenorth.utils.database import init_db, log_request, get_request_count, cleanup_old_logs
 
+# Get API base URL from environment, default to production
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.mytruenorth.app")
+
 # === Logging Setup ===
 file_path = os.path.realpath(__file__)
 log_dir = os.path.join(os.path.dirname(file_path), ".logs")
@@ -273,7 +276,7 @@ async def stream_workflow(question: str) -> AsyncGenerator[str, None]:
                 api_url = web_url
                 filename = "web_source"
             else:
-                api_url = f"https://mytruenorth.app/api/pdf/{filename}/pages?page={page}"
+                api_url = f"{API_BASE_URL}/api/pdf/{filename}/pages?page={page}"
 
             if citation_num in structured_map:
                 snippet = structured_map[citation_num]
@@ -362,7 +365,7 @@ async def invoke_llm(question: str) -> Tuple[str, List[Any], List[Citation]]:
                 year = str(get_meta(doc, "year", "")) or "n.d."
                 page = str(get_meta(doc, "page", ""))
                 filename = os.path.basename(get_meta(doc, "file_path", "") or get_meta(doc, "source", ""))
-                api_url = f"https://mytruenorth.app/api/pdf/{filename}/pages?page={page}"
+                api_url = f"{API_BASE_URL}/api/pdf/{filename}/pages?page={page}"
 
                 url_meta = get_meta(doc, "url", "")
                 if url_meta:
