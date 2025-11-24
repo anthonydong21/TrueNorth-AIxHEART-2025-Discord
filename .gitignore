@@ -2,6 +2,7 @@
 .env
 __pycache__
 src/books_pdf/*
+!src/books_pdf/references.bib
 vector_store*
 .DS_Store
 .logs
