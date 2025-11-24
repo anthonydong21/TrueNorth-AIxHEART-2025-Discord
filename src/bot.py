@@ -27,7 +27,7 @@ def looks_like_link(word):
 
 async def send_safe(sender, text, MAX_LEN):#should work with ctx and interaction.followup
     send = sender.send
-    words = text.split(" ")
+    words = text.replace("\n", " \n ").split(" ")
     current = ""
     for w in words:
         if looks_like_link(w):
