@@ -47,3 +47,7 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+
+networks:
+  default:
+    name: truenorth-network
