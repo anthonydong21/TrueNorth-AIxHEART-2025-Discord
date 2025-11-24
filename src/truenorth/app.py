@@ -5,6 +5,7 @@ import json
 import asyncio
 from datetime import datetime, timedelta
 from typing import Tuple, List, Any, AsyncGenerator
+from urllib.parse import urlparse
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -108,7 +109,7 @@ class Citation(BaseModel):
     year: str
     page: str
     snippet: str
-    pdfUrl: str
+    url: str
     filename: str
 
 
@@ -169,7 +170,6 @@ async def stream_workflow(question: str) -> AsyncGenerator[str, None]:
         return doc.page_content
 
     import re
-    from urllib.parse import urlparse
 
     def clean_snippet(text: str) -> str:
         if not text:
@@ -267,12 +267,12 @@ async def stream_workflow(question: str) -> AsyncGenerator[str, None]:
                 web_url = source_meta
 
             if is_web:
-                if author == "Unknown Author":
-                    try:
-                        domain = urlparse(web_url).netloc
-                        author = domain.replace("www.", "")
-                    except:
-                        author = "Web Source"
+                # Extract root domain for author
+                try:
+                    domain = urlparse(web_url).netloc
+                    author = domain.replace("www.", "")
+                except:
+                    author = "Web Source"
                 api_url = web_url
                 filename = "web_source"
             else:
@@ -285,7 +285,7 @@ async def stream_workflow(question: str) -> AsyncGenerator[str, None]:
                 snippet = content.strip()[:100] + "..." if len(content) > 100 else content.strip()
 
             snippet = clean_snippet(snippet)
-            citations.append(Citation(id=int(citation_num), author=author, title=title, year=year, page=page, snippet=snippet, pdfUrl=api_url, filename=filename).dict())
+            citations.append(Citation(id=int(citation_num), author=author, title=title, year=year, page=page, snippet=snippet, url=api_url, filename=filename).dict())
 
     citations.sort(key=lambda x: x["id"])
 
@@ -369,11 +369,17 @@ async def invoke_llm(question: str) -> Tuple[str, List[Any], List[Citation]]:
 
                 url_meta = get_meta(doc, "url", "")
                 if url_meta:
+                    # Extract root domain for author
+                    try:
+                        domain = urlparse(url_meta).netloc
+                        author = domain.replace("www.", "")
+                    except:
+                        author = "Web Source"
                     api_url = url_meta
                     filename = "web_source"
 
                 snippet = structured_map.get(citation_num, "") or get_page_content(doc)[:100]
-                citations.append(Citation(id=int(citation_num), author=author, title=title, year=year, page=page, snippet=snippet, pdfUrl=api_url, filename=filename))
+                citations.append(Citation(id=int(citation_num), author=author, title=title, year=year, page=page, snippet=snippet, url=api_url, filename=filename))
 
         citations.sort(key=lambda x: x.id)
         return response, final_state, citations
