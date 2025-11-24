@@ -29,24 +29,23 @@ async def send_safe(sender, text, MAX_LEN):
     send = sender.send
     current = ""
 
-    words = text.split(" ")
+    for line in text.splitlines(keepends=True): 
+        words = line.split(" ")
 
-    for w in words:
-        w = w.strip()
-        if looks_like_link(w):
-            if current.strip():
-                await send(current)
-                current = ""
-            await send(w) 
-            continue
-        if len(current) + len(w) + 1 > MAX_LEN:
-            await send(current)
-            current = w
-        else:
-            if current:
-                current += " " + w
+        for w in words:
+            if looks_like_link(w):
+                if current.strip():
+                    await send(current)
+                    current = ""
+                await send(w)  # send the link alone
+                continue
+            # if adding this word exceeds MAX_LEN, send accumulated text
+            if len(current) + len(w) + 1 > MAX_LEN:
+                if current.strip():
+                    await send(current)
+                current = w + " "
             else:
-                current = w
+                current += w + " "
     if current.strip():
         await send(current)
 
