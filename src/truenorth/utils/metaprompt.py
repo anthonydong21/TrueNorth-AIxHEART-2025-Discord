@@ -9,4 +9,4 @@ goals_as_str = "\n".join([f"{i}. {goal}" for i, goal in enumerate([DP1, DP2, DP3
 
 vectorstore_content_summary = "communcation strategies rooted in conflict resolution and diplomacy, positive psychology, dialectical behavioral therapy, leadership skills, coping mechanisms"
 
-system_relevant_scope = "STEM topics, optimizing comfort in lived environment, maintaining positive trajectory towards maximizing STEM career"
+system_relevant_scope = "positive career development, conflict resolution, leadership skills, coping mechanisms, STEM topics, optimizing comfort in lived environment, maintaining positive trajectory towards maximizing STEM career"

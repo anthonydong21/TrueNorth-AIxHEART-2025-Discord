@@ -8,15 +8,13 @@ from typing import Tuple, List, Dict, Any, Optional, TypeVar, Type, Union
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from langchain_anthropic import Anthropic, ChatAnthropic
+from langchain_anthropic import ChatAnthropic
 from langchain_deepseek import ChatDeepSeek
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_core.utils.function_calling import convert_to_openai_function
-
 
 from truenorth.utils.logging import get_caller_logger
 from truenorth.utils.progress import progress
@@ -137,31 +135,21 @@ def instantiate_model(model_class: Type[T], data: Any) -> T:
 
 
 def extract_json_from_response(text: Union[str, bytes]) -> Optional[dict]:
+    """
+    Robustly extract JSON from text that might be wrapped in markdown or contain extra commentary.
+    """
     if isinstance(text, bytes):
         text = text.decode("utf-8", errors="ignore")
 
+    # 1. Try standard Markdown JSON block
     md_block = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
     if md_block:
-        raw_block = md_block.group(1)
-
-        def fix_quotes(json_str: str) -> str:
-            def escape_problem_quotes(match):
-                key = match.group(1)
-                value = match.group(2)
-                # Escape inner double quotes but keep the outer ones intact
-                value_escaped = re.sub(r'(?<!\\)"', r'\\"', value)
-                return f'"{key}": "{value_escaped}"'
-
-            # Only apply to fields like "explanation": "some string"
-            return re.sub(r'"(\w+)":\s*"((?:[^"\\]|\\.)*?)"', escape_problem_quotes, json_str, flags=re.DOTALL)
-
-        safe_block = fix_quotes(raw_block)
         try:
-            return json.loads(safe_block)
-        except json.JSONDecodeError as e:
-            logger.warning(f"[extract_json_from_response] Failed to parse markdown JSON after sanitization: {e}")
-            logger.warning(f"Offending block:\n{safe_block}")
+            return json.loads(md_block.group(1))
+        except json.JSONDecodeError:
+            pass  # Fall through to other methods
 
+    # 2. Try finding the first brace-enclosed object
     json_candidates = re.findall(r"(\{.*?\})", text, re.DOTALL)
     for candidate in json_candidates:
         try:
@@ -169,8 +157,14 @@ def extract_json_from_response(text: Union[str, bytes]) -> Optional[dict]:
         except json.JSONDecodeError:
             continue
 
+    # 3. Try parsing the whole text as JSON (cleaning start/end)
     try:
-        return json.loads(text)
+        cleaned = text.strip()
+        if cleaned.startswith("```json"):
+            cleaned = cleaned[7:]
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+        return json.loads(cleaned.strip())
     except json.JSONDecodeError:
         pass
 
@@ -188,15 +182,17 @@ def create_default_response(model_class: Optional[Type[T]]) -> Optional[T]:
 
 
 def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: Type[T], agent_name: Optional[str] = None, max_retries: int = 3, default_factory=None, verbose=False) -> T:
+    """
+    Unified LLM caller that handles structured output differences across providers.
+    """
     model_info = get_model_info(model_name)
     llm = get_model(model_name, model_provider)
 
-    logger.info(f"LLM model provider : {model_provider}")
-    logger.info(f"LLM model provider is Claude : {model_provider == 'Anthropic'}") # testing change due to terminal error
+    logger.info(f"LLM provider: {model_provider} | Model: {model_name}")
 
     if pydantic_model:
-        if model_info and pydantic_model:
-            logger.info("Attempting structured output")
+        if model_info:
+            logger.info("Configuring structured output...")
             llm = llm.with_structured_output(pydantic_model)
 
     for attempt in range(1, max_retries + 1):
@@ -208,66 +204,94 @@ def call_llm(prompt: Any, model_name: str, model_provider: str, pydantic_model: 
             result = llm.invoke(prompt)
 
             if verbose:
-                logger.info(f"LLM Result: {result}")
+                logger.info(f"LLM Result Type: {type(result)}")
+                # Only log content if it's not the object itself (to avoid massive logs)
+                if not isinstance(result, pydantic_model):
+                    logger.info(f"LLM Result Content: {result}")
 
-            if pydantic_model and not isinstance(result, pydantic_model):
-                # Handle different providers consistently
-                if model_provider == "Anthropic":
-                    # For Anthropic with structured output, result is already the pydantic model
-                    if isinstance(result, pydantic_model):
-                        return result
-                    else:
-                        # Fallback if structured output didn't work
-                        result_content = str(result)
+            # === SUCCESS CASE 1: Direct Pydantic Object ===
+            # Most providers (OpenAI, Anthropic, newer Gemini) via LangChain return the object directly
+            if pydantic_model and isinstance(result, pydantic_model):
+                return result
+
+            # === FALLBACK HANDLING ===
+            if pydantic_model:
+                # Normalize result content
+                result_content = ""
+                if isinstance(result, dict):
+                    # Sometimes returned as a dict instead of model instance
+                    return instantiate_model(pydantic_model, result)
+                elif hasattr(result, "content"):
+                    result_content = str(result.content)
                 else:
-                    # For other providers, extract content
-                    result_content = result.content
+                    result_content = str(result)
 
-                # Handle Gemini special case
-                if model_info and model_info.is_gemini():
-                    if isinstance(result, pydantic_model):
-                        return result
-                    parsed = extract_json_from_response(result_content)
-                    if not parsed:
-                        raise ValueError(f"[Gemini] Failed to extract JSON from:\n{result_content}")
-                    return instantiate_model(pydantic_model, parsed)
+                # Check for tool_calls (Common for Gemini/OpenAI structured output)
+                if hasattr(result, "tool_calls") and result.tool_calls:
+                    try:
+                        # LangChain standardizes tool calls into a list of dicts
+                        args = result.tool_calls[0]["args"]
+                        return instantiate_model(pydantic_model, args)
+                    except Exception as e:
+                        logger.warning(f"Failed to parse tool_calls: {e}")
 
-                # Handle models without JSON mode
-                elif model_info and not model_info.has_json_mode():
-                    parsed = extract_json_from_response(result_content)
-                    if parsed:
-                        return instantiate_model(pydantic_model, parsed)
-                    else:
-                        # Try to handle simple boolean responses
-                        raw_output = result_content.strip().lower()
-                        if raw_output in {"true", "false"}:
-                            return instantiate_model(pydantic_model, raw_output == "true")
-                        else:
-                            raise ValueError(f"Unexpected non-JSON raw output: {result_content}")
+                # Try to extract JSON from text content
+                parsed_json = extract_json_from_response(result_content)
+                if parsed_json:
+                    return instantiate_model(pydantic_model, parsed_json)
 
-                # For other providers with structured output
-                else:
-                    if isinstance(result, pydantic_model):
-                        return result
-                    # If structured output failed, try to parse as JSON
-                    parsed = extract_json_from_response(result_content)
-                    if parsed:
-                        return instantiate_model(pydantic_model, parsed)
-                    else:
-                        raise ValueError(f"Failed to parse structured output: {result_content}")
+                # Gemini-Specific Text Fallback (For "AnswerResponse" type models)
+                # When Gemini ignores JSON mode and returns chatty text with citations
+                if model_provider == "Gemini" or model_info.is_gemini():
+                    logger.warning("[Gemini] JSON extraction failed. Attempting text-based fallback.")
+                    try:
+                        fields = list(pydantic_model.model_fields.keys())
+
+                        # Custom parser for AnswerResponse
+                        if "answer" in fields and "citations" in fields:
+                            import re
+
+                            # Simple heuristic: Everything before "### Citations" or "**References**" is the answer
+                            # If we find citation markers [1] "quote", we extract them
+
+                            answer_text = result_content
+                            citations = []
+
+                            # Split on common citation section headers
+                            split_patterns = [r"###\s*Citations", r"\*\*\s*References\s*\*\*", r"###\s*References"]
+                            for pattern in split_patterns:
+                                parts = re.split(pattern, result_content, flags=re.IGNORECASE)
+                                if len(parts) > 1:
+                                    answer_text = parts[0].strip()
+                                    citation_text = parts[1].strip()
+
+                                    # Extract citations: [1] "quote"
+                                    citation_matches = re.findall(r'\[(\d+)\]\s*"(.*?)"', citation_text, re.DOTALL)
+                                    for source_id, quote in citation_matches:
+                                        citations.append({"source_id": int(source_id), "quote": quote.strip()})
+                                    break
+
+                            return instantiate_model(pydantic_model, {"answer": answer_text, "citations": citations})
+
+                        elif "content" in fields:
+                            return instantiate_model(pydantic_model, {"content": result_content})
+
+                    except Exception as e:
+                        logger.warning(f"Fallback parsing failed: {e}")
+
+                raise ValueError(f"Failed to parse structured output from response: {result_content[:200]}...")
 
             return result
 
         except Exception as e:
-            # Get the current traceback
             tb = traceback.format_exc()
             logger.error(f"LLM call failed on attempt {attempt}: {e}")
-            logger.error(f"Full traceback:\n{tb}")
+            logger.debug(f"Full traceback:\n{tb}")
 
             if agent_name:
                 progress.update_status(agent_name, None, f"Retry {attempt}/{max_retries}")
+
             if attempt == max_retries:
-                logger.error(f"Max retries reached after {max_retries} attempts.")
                 return default_factory() if default_factory else create_default_response(pydantic_model)
 
     return create_default_response(pydantic_model)

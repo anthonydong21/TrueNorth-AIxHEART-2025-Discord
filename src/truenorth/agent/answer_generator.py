@@ -1,14 +1,25 @@
-# answer-generator.py
 import time
 from datetime import datetime
+from typing import List, Optional
 from langchain_core.prompts import PromptTemplate
 from langchain_core.documents import Document
+from pydantic import BaseModel, Field
 from truenorth.utils.llm import call_llm
 from truenorth.agent.state import show_agent_reasoning
 from truenorth.utils.logging import get_caller_logger
 from truenorth.utils.metaprompt import goals_as_str, system_relevant_scope
 
 logger = get_caller_logger()
+
+
+class CitedSource(BaseModel):
+    source_id: int = Field(description="The source ID number used in the text (e.g., 1 for [1])")
+    quote: str = Field(description="The exact relevant quote from the source text that supports the statement.")
+
+
+class AnswerResponse(BaseModel):
+    answer: str = Field(description="The natural language answer to the user's question, including [ID] citations.")
+    citations: Optional[List[CitedSource]] = Field(default_factory=list, description="List of sources cited in the answer with the relevant quotes.")
 
 
 def create_citation_context(documents):
@@ -27,9 +38,21 @@ def create_citation_context(documents):
     sources_summary = []
     formatted_context = []
     references_dict = {}
-    source_num = 1
 
-    for doc in documents:
+    # Use existing citation numbers if available, otherwise assign them
+    # document_relevence_checker assigns citation_num, so we should respect it
+    # But we need to ensure they are sorted
+
+    # Sort documents by citation_num if present, otherwise by index
+    docs_with_num = [d for d in documents if d.metadata.get("citation_num")]
+    docs_without_num = [d for d in documents if not d.metadata.get("citation_num")]
+
+    sorted_docs = sorted(docs_with_num, key=lambda x: x.metadata.get("citation_num")) + docs_without_num
+
+    # If no numbers were assigned (e.g. bypassed checker), assign 1..N
+    current_num = 1
+
+    for doc in sorted_docs:
         metadata = doc.metadata if hasattr(doc, "metadata") else doc.get("metadata", {})
         page_content = doc.page_content if hasattr(doc, "page_content") else doc.get("page_content", "")
 
@@ -44,10 +67,19 @@ def create_citation_context(documents):
             # Remove BOM and strip whitespace
             return str(val).replace("\ufeff", "").strip() or default
 
+        # Use assigned citation number or fallback
+        source_num = metadata.get("citation_num") or current_num
+        if not metadata.get("citation_num"):
+            metadata["citation_num"] = source_num
+            current_num += 1
+
         # Extract metadata with fallbacks
         author = get_clean_meta("author", "Unknown Author")
+        # Remove BibTeX curly brackets from author names
+        if author.startswith("{") and author.endswith("}"):
+            author = author[1:-1]
         title = get_clean_meta("title", "Unknown Title")
-        year = get_clean_meta("creationdate", "n.d.")[:4]
+        year = get_clean_meta("year") or (get_clean_meta("creationdate", "n.d.")[:4] if get_clean_meta("creationdate", "") else "n.d.")
         file_path = get_clean_meta("file_path", get_clean_meta("source", ""))
         page = get_clean_meta("page", get_clean_meta("page_number", get_clean_meta("page_num", "")))
         url = get_clean_meta("url", "")
@@ -63,31 +95,22 @@ def create_citation_context(documents):
             else:
                 citation_display = title
 
-            # Create summary entry
-            sources_summary.append(f"[{source_num}] {citation_display}")
-
-            # Create full citation for references dict (internal use)
             citation_link = f"[{title}]({url})" if title != "Unknown Title" else f"{url}"
-            references_dict[source_num] = f"{citation_link}"
-
         else:
             # Book/PDF source
             citation_display = f"{author} ({year}) - {title}"
             if page:
                 citation_display += f", p. {page}"
 
-            # Create summary entry
-            sources_summary.append(f"[{source_num}] {citation_display}")
+            filename = file_path.split("/")[-1] if file_path else ""
+            api_url = f"https://mytruenorth.app/api/pdf/{filename}/pages?page={page}"
+            citation_link = f"{author} ({year}). [{title}]({api_url})"
 
-            # Create full citation for references dict (internal use)
-            citation_link = f"{author} ({year}). [{title}](file://{file_path}#{page})"
+            sources_summary.append(f"[{source_num}] {citation_display}")
             references_dict[source_num] = citation_link
 
         # Add to formatted context for the LLM
-        # This explicitly links the Source ID to the Content
         formatted_context.append(f"Source [{source_num}]:\nMetadata: {citation_display}\nContent: {page_content}\n")
-
-        source_num += 1
 
     return "\n".join(sources_summary), "\n---\n".join(formatted_context), references_dict
 
@@ -95,12 +118,6 @@ def create_citation_context(documents):
 def format_references_from_dict(references_dict):
     """
     Formats the references dictionary into a clean references section.
-
-    Args:
-        references_dict: Dictionary mapping source numbers to citations
-
-    Returns:
-        str: Formatted references section
     """
     if not references_dict:
         return ""
@@ -112,7 +129,7 @@ def format_references_from_dict(references_dict):
     return references_text
 
 
-# Define the enhanced prompt template for answer generation
+# Define the structured prompt template for answer generation
 answer_generator_prompt_template = PromptTemplate.from_template(
     """
 Today is {current_datetime}.
@@ -127,7 +144,7 @@ You do not replace a therapist, legal counsel, or HR department, but you can pro
 **Available Sources for Citation:**
 {source_context}
 
-Use the above numbered sources to support your answer. When referencing information, use the format [1], [2], etc. corresponding to the source numbers above.
+Use the above numbered sources to support your answer. When referencing information, use the format [ID] (e.g., [1], [2]) in the text.
 
 ---
 
@@ -142,27 +159,20 @@ Use the following background information to help answer the question:
                                                                 
 **Instructions**:
 1. Base your answer primarily on the background knowledge provided above.
-2. Use numbered citations when referencing specific information (e.g., [1], [2]).
+2. Use numbered citations in the text when referencing specific information (e.g., [1], [2]).
 3. If the answer is **not present** in the knowledge, say so explicitly.
-4. Keep the answer **concise**, **accurate**, and **focused** on the question.
-5. End your response with a **References** section that includes:
-   - Full citations with clickable links to the source
-   - Meaningful quotes from the page content that support your answer
-   - For books with multiple relevant sections, show different page links and quotes
-6. Format references as:
-   - Single section: `*   [i] Author (Year). [Title](file://path#page)\n    > "Meaningful quote from content"`
-   - Multiple sections: `*   [i] Author (Year). *Title*\n    - [Page X](file://path#X): "Quote from page X"\n    - [Page Y](file://path#Y): "Quote from page Y"`
-   - Web sources: `*   [i] [Title](URL)\n    > "Meaningful quote from content"`
-7. Only answer questions relevant to STEM, workplace support, or academic guidance. For all other queries, politely decline.
+4. Be **comprehensive**, **accurate**, and **focused**. Do not give short, generic answers.
+5. **Explain acronyms** (like PERMA+4) if you use them. Do not just list them; explain what they mean and how to apply them.
+6. Provide **concrete, actionable advice** that an individual can use to improve their situation, not an organizational solution.
+7. Only answer questions relevant to STEM, workplace support, or academic guidance.
+8. **CRITICAL**: You must extract the exact quote from the source text that supports each citation you use. This will be used to display "inspirational" citation cards.
+9. Return your response in the specified structured format, including the answer text and a list of citations with their quotes.
 
 ---
 **Important**:
-Never invent or guess answers using general world knowledge.  
-Your role is to **maintain trust** and offer emotionally supportive, mission-aligned responses.
-
-Always keep a lighthearted, concise manner of speaking while providing a helpful answer to the question.
-                                                                
-**Answer**:
+- Never invent or guess answers using general world knowledge.  
+- Your role is to **maintain trust** and offer emotionally supportive, mission-aligned responses.
+- Always keep a lighthearted but **thorough** manner of speaking while providing a helpful answer to the question.
 """
 )
 
@@ -171,25 +181,6 @@ Always keep a lighthearted, concise manner of speaking while providing a helpful
 def answer_generator(state):
     """
     Generates an answer based on the retrieved documents and user question.
-
-    This node prepares a prompt that includes:
-    - The original or rewritten user question
-    - A list of relevant documents (from vectorstore or web search)
-
-    It invokes the main LLM to synthesize a concise and grounded response, returning the result
-    for use in later hallucination and usefulness checks.
-
-    Args:
-        state (GraphState): The current LangGraph state containing documents and question(s).
-
-    Returns:
-        state (GraphState): The updated LangGraph state with the following values.
-            - "question": The input question used in generation
-            - "generation": The generated answer (str)
-            - "references_table": Formatted references section (str)
-            - "token_count": Number of tokens used in generation
-            - "response_time": Time taken to generate the response (in seconds)
-            - "total_cost": Cost incurred (if metered by API provider)
     """
     logger.info("\n---ANSWER GENERATION---")
 
@@ -197,30 +188,87 @@ def answer_generator(state):
 
     documents = state.documents
 
-    # Use original_question if available (after rewriting), otherwise default to input question
+    # Use original_question if available
     if state.original_question:
         question = state.original_question
     else:
         question = state.question
 
-    # Ensure all documents are LangChain Document objects (convert from dicts if needed)
+    # Ensure all documents are LangChain Document objects
     documents = [Document(metadata=doc["metadata"], page_content=doc["page_content"]) if isinstance(doc, dict) else doc for doc in documents]
 
-    # Create citation context and references mapping
+    # Create citation context
     source_context, formatted_context, references_dict = create_citation_context(documents)
 
-    # Format the prompt for the answer generator
+    # Format the prompt
     prompt = answer_generator_prompt_template.format(current_datetime=current_datetime, context=formatted_context, question=question, goals_as_str=goals_as_str, source_context=source_context)
 
     logger.info(f"Answer generator prompt: {prompt}")
-    response = call_llm(prompt=prompt, model_name=state.metadata["model_name"], model_provider=state.metadata["model_provider"], pydantic_model=None, agent_name="answer_generator_agent")
 
-    show_agent_reasoning(response, f"Answer Generator Response | " + state.metadata["model_name"])
+    # Force use of Gemini 2.5 Pro for answer generation
+    # While preserving other state metadata
+    answer_model_name = "gemini-2.5-pro"
 
-    # The LLM should now include references in its response, but we store the mapping for potential use
-    state.messages.append(response)
-    state.generation = str(response.content)
+    # Call LLM with structured output using Gemini 2.5
+    response_obj = call_llm(prompt=prompt, model_name=answer_model_name, model_provider="Gemini", pydantic_model=AnswerResponse, agent_name="answer_generator_agent")  # Always Gemini for this model
+
+    show_agent_reasoning(response_obj, f"Answer Generator Response | " + answer_model_name)
+
+    # Extract components
+    if isinstance(response_obj, AnswerResponse):
+        generation_text = response_obj.answer
+        structured_citations = response_obj.citations or []
+    else:
+        # Fallback if structured output failed
+        generation_text = str(response_obj.content) if hasattr(response_obj, "content") else str(response_obj)
+        structured_citations = []
+
+    # Store the clean answer (without references section) for the web frontend
+    state.metadata["clean_answer"] = generation_text
+
+    # Append references section text for backward compatibility / Discord bot
+    # We construct this using the STRUCTURED citations to ensure quotes match
+
+    # Filter references_dict to only include used citations
+    used_ids = set()
+    structured_map = {c.source_id: c.quote for c in structured_citations}
+
+    for cit in structured_citations:
+        used_ids.add(cit.source_id)
+
+    # Also check text for [N] markers as a backup
+    import re
+
+    text_ids = set(int(x) for x in re.findall(r"\[(\d+)\]", generation_text))
+    used_ids.update(text_ids)
+
+    # Build references section manually to include the correct quotes
+    references_text_parts = ["\n**References**\n"]
+    for num in sorted(list(used_ids)):
+        ref_link = references_dict.get(num, "")
+        if ref_link:
+            quote = structured_map.get(num, "")
+            # Format: * [1] Author...
+            #         > "Quote"
+            entry = f"*   [{num}] {ref_link}"
+            if quote:
+                entry += f"\n    > '{quote}'"
+            references_text_parts.append(entry)
+
+    references_section = "\n".join(references_text_parts)
+
+    final_text = generation_text + "\n" + references_section
+
+    # Update state
+    # We store the structured citations in metadata so app.py can use them
+    state.generation = final_text
     state.metadata["references_dict"] = references_dict
+    state.metadata["structured_citations"] = [c.dict() for c in structured_citations]
+
+    # Add message to history
+    from langchain_core.messages import AIMessage
+
+    state.messages.append(AIMessage(content=final_text))
 
     logger.info(f"Current state: {state}")
     logger.info(f"Response with integrated references: {state.generation}")
