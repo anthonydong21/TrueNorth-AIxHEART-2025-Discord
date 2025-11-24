@@ -45,7 +45,11 @@ MAX_REQUESTS_PER_DAY = 3
 def check_rate_limit(request: Request):
     """
     Check if the client IP has exceeded the daily rate limit using SQLite database.
+    Rate limiting is currently disabled.
     """
+    # Rate limiting disabled
+    return
+
     # Get client IP (handle proxy headers)
     client_ip = request.headers.get("X-Forwarded-For")
     if client_ip:
