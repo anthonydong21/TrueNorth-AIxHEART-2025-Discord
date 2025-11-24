@@ -23,7 +23,6 @@ def looks_like_link(word):
         word.startswith("http://")
         or word.startswith("https://")
         or word.startswith("www.")
-        or ("." in word and " " not in word)
     )
 
 async def send_safe(sender, text, MAX_LEN):#should work with ctx and interaction.followup
