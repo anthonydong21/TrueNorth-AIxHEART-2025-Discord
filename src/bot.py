@@ -24,30 +24,29 @@ def looks_like_link(word):
         or word.startswith("https://")
         or word.startswith("www.")
     )
-
 async def send_safe(sender, text, MAX_LEN):
     send = sender.send
     current = ""
-
-    for line in text.splitlines(keepends=True): 
+    lines = text.split("\n")
+    for line in lines:
         words = line.split(" ")
-
         for w in words:
-            if looks_like_link(w):
+            if looks_like_link(w) and len(w) > MAX_LEN:
+                # Send accumulated text first
                 if current.strip():
-                    await send(current)
+                    await send(current.strip())
                     current = ""
-                await send(w)  # send the link alone
-                continue
-            # if adding this word exceeds MAX_LEN, send accumulated text
-            if len(current) + len(w) + 1 > MAX_LEN:
-                if current.strip():
-                    await send(current)
-                current = w + " "
+                await send(w)
             else:
-                current += w + " "
+                if len(current) + len(w) + 1 > MAX_LEN:
+                    await send(current.strip())
+                    current = w + " "
+                else:
+                    current += w + " "
+        current += "\n"
+    # Send anything remaining
     if current.strip():
-        await send(current)
+        await send(current.strip())
 
 intents = discord.Intents.default()
 intents.message_content = True  
