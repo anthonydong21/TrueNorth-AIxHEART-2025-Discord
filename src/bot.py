@@ -48,6 +48,19 @@ async def send_safe(sender, text, MAX_LEN):
     if current.strip():
         await send(current.strip())
 
+async def citationCreator(sender, citations):
+    seen_ids = set()
+    for cite in citations:
+        cid = cite.get('id')
+        if cid in seen_ids:
+            continue  # skip duplicates
+        seen_ids.add(cid)
+        author = cite.get('author', 'Unknown author')
+        title = cite.get('title', 'Untitled')
+        url = cite.get('url','')
+        snippet = cite.get('snippet','')
+        cite_message = f"[{cid}] [{author} — **{title}**]({url})\n> {snippet}"
+        await send_safe(sender, cite_message, MAX_LEN)
 intents = discord.Intents.default()
 intents.message_content = True  
 intents.members = True
@@ -65,31 +78,9 @@ async def on_ready():
 async def on_member_join(member):
     await member.create_dm()
     await member.dm_channel.send(
-        f'Hiii {member.name}, welcome to my server!!!!!!!!!!!!!!'
+        f'Hello {member.name}, welcome to myTrueNorth.app, if you have any questions, refer to the info text channel!'
     )
 
-
-
-
-#silly quotes, references from toontown, 
-#https://www.mmocentralforums.com/forums/showthread.php?t=234847
-
-@bot.command(name='joke')
-async def joke(ctx):
-    sillyquote = [
-        "What travels around the world but stays in a corner? ||A stamp.||",
-        "Why was the math book unhappy? ||It had too many problems.||",
-        "What did the doctor say to the sick orange? ||Are you peeling well?||",
-        "What did the peanut say to the elephant? ||Nothing peanuts can't talk||",
-        "Why do mummies make excellent spies? ||Because they're good at keeping things under wraps||",
-        "What do you call a blind dinosaur? ||An I-Dont-Think-He-Saurus!||",
-        "What kind of mistakes do spooks make? ||Boo boos||",
-        "What do you call a chicken at the north pole? ||Lost||",
-        "What did the cashier say to the register? ||Im counting on you.||"
-    ]
-    response = random.choice(sillyquote)
-    await ctx.send(response)
-    await ctx.message.add_reaction('✅')
 #truenorth backend test
 @bot.command(name='askTrueNorth')
 async def ask_truenorth(ctx, *, question):
@@ -103,9 +94,11 @@ async def ask_truenorth(ctx, *, question):
         response.raise_for_status()
         data = response.json()
         answer = data.get("response", "No response found")
+        citations = data.get("citations", [])
 
         full_message = f"**Q:** {question}\n**A:** {answer}"
         await send_safe(ctx, full_message, MAX_LEN)
+        await citationCreator(ctx, citations)
         await ctx.message.add_reaction('✅')
 
     except requests.exceptions.RequestException as e:
@@ -116,7 +109,7 @@ async def ask_truenorth(ctx, *, question):
 #help
 @bot.command(name='help')
 async def helpme(ctx):
-    help_text = "Here are my current commands:\n!joke: tells a joke!"
+    help_text = "Here are my current commands:\n!askTrueNorth (Your Response Here!)"
     await ctx.send(help_text)
 #raise exception for errors
 @bot.command(name='raise-exception')
@@ -136,9 +129,11 @@ async def ask_gemini(ctx, *, question):
         response.raise_for_status()
         data = response.json()
         answer = data.get("response", "No response found")
+        citations = data.get("citations", [])
 
         full_message = f"**Q:** {question}\n**A:** {answer}"
         await send_safe(ctx, full_message, MAX_LEN)
+        await citationCreator(ctx, citations)
         await ctx.message.add_reaction('✅')
 
     except requests.exceptions.RequestException as e:
@@ -157,9 +152,11 @@ async def ask_slash(interaction: discord.Interaction, question: str):
         response.raise_for_status()
         data = response.json()
         answer = data.get("response", "No response found")
+        citations = data.get("citations", [])
 
         full_message = f"**Q:** {question}\n**A:** {answer}"
         await send_safe(interaction.followup, full_message, MAX_LEN)
+        await citationCreator(interaction.followup, citations)
 
     except requests.exceptions.RequestException as e:
         print(f"Error contacting TrueNorth backend: {e}")
